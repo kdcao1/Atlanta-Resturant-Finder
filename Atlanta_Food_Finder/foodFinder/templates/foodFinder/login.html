@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Atlanta Food Finder</title>
+    <link rel="stylesheet" href="{% static "./foodFinder/css/bulma.css" %}">
+</head>
+<body>
+    <section class="section is-large is-vcentered">
+        <div class="is-flex is-flex-direction-column is-align-self-center is-align-content-center">
+            <h1 class="title is-size-1 has-text-centered">Atlanta Food Finder</h1>
+            <div class="columns is-centered">
+                <form class="column is-one-fifth is-2" action="{% url 'login' %}">
+                    {% csrf_token %}
+                    <div class="field">
+                        <div class="control my-4">
+                            <label class="label" for="username">Username</label>
+                            <input class="input" type="text" name="username" id="username" placeholder="Username">
+                        </div>
+                        <div class="control my-4">
+                            <label for='password' class="label">Password</label>
+                            <input class="input" type="password" id="password" name="password" placeholder="Password">
+                        </div>
+                        <input class="button mt-5 is-fullwidth is-primary" type="submit" value="Login" />
+                        <a class="button is-primary is-light mt-3 is-fullwidth">Register</a>
+                    </div>
+                </form>
+
+            </form>
+        </div>
+    </section>
+</body>
+</html>
