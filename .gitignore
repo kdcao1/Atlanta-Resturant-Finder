@@ -1,0 +1,34 @@
+# Python files
+*.pyc
+__pycache__/
+
+# Django-related files
+db.sqlite3
+/static/
+media/
+env/
+
+# IDE specific files (for IntelliJ or PyCharm)
+.idea/
+
+# Virtual environment
+venv/
+env/
+.venv/
+
+# Logs
+*.log
+
+# Ignore GitHub Actions workflow temp files
+.github/workflows/django.yml
+
+# Byte-compiled / optimized / DLL files
+*.py[cod]
+*$py.class
+
+# Ignore migrations
+**/migrations/*.pyc
+**/migrations/*.log
+
+# Django secret keys (for production)
+.env
