@@ -16,7 +16,7 @@ atlanta_lat_lng = (location['lat'], location['lng'])
 
 def index():
     #initial nearest 20 results
-    places_results = gmaps.places_nearby(location=atlanta_lat_lng, radius=4000, type='restaurant')
+    places_result = gmaps.places_nearby(location=atlanta_lat_lng, radius=4000, type='restaurant')
     results = [{
         'name': place['name'],
         'address': place.get('vicinity'),
@@ -42,7 +42,7 @@ def search():
             continue
         if rating_threshold and place.get('rating') < rating_threshold:
             continue
-        filtered_places.append({
+        filtered_results.append({
             'name': place['name'],
             'address': place.get('vicinity'),
             'price_level': place.get('price_level'),
