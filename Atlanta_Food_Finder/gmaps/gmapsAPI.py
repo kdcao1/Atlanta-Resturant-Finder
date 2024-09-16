@@ -23,6 +23,7 @@ def index():
         'price_level': place.get('price_level', 'N/A'),
         'rating': place.get('rating', 'N/A')
     } for place in places_result['results'][:20]]
+    
     return jsonify(results)
 
 def search():
