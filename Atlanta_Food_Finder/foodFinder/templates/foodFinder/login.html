@@ -23,12 +23,17 @@
                             <label for='passwordInput' class="label">Password</label>
                             <input class="input" type="password" id="passwordInput" name="password" placeholder="Password">
                         </div>
+                        {% if login_error %}
+                            <div class="notification is-danger has-text-centered">
+                                Invalid username or password
+                            </div>
+                        {% endif %}
                         <input class="button mt-5 is-fullwidth is-primary" type="submit" value="Login" />
                         <a class="button is-primary is-light mt-3 is-fullwidth">Register</a>
                     </div>
                 </form>
 
-            </form>
+            </div>
         </div>
     </section>
 </body>
