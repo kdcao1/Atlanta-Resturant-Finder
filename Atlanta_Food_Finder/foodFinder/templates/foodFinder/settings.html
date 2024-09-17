@@ -41,7 +41,15 @@
         <p class="subtitle">
             Settings page
         </p>
+
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button class="button is-primary" type="submit">Save Changes</button>
+        </form>
     </div>
 </section>
+
+
 </body>
 </html>

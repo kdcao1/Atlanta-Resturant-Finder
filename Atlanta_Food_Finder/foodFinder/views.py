@@ -1,7 +1,9 @@
 from lib2to3.fixes.fix_input import context
 
 from django.shortcuts import render, redirect
+from .models import Guests, Restaurant
 from django.contrib import messages
+from .forms import ProfileForm
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -38,3 +40,20 @@ def favorites(request):
 
 def settings(request):
     return render(request, "foodFinder/settings.html", context=None)
+
+@login_required
+def settings(request):
+    guest = Guests.objects.get(user=request.user)
+
+    if request.method == "POST":
+        form = ProfileForm(request.POST, request.FILES, instance=guest)
+        if form.is_valid():
+            form.save()
+            return redirect('settings')
+    else:
+        form = ProfileForm(instance=guest)
+
+    context = {
+        'form': form,
+    }
+    return render(request, 'foodFinder/settings.html', context)
