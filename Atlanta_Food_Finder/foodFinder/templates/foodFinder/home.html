@@ -8,42 +8,49 @@
     <link rel="stylesheet" href="{% static "./foodFinder/css/bulma.css" %}">
 </head>
 <body>
+<section class="hero is-fullheight">
+    <div class="hero-head">
+        <nav class="navbar is-fixed-top" role="navigation" aria-label="main navigation">
+            <div class="navbar-brand">
+                <strong class="is-size-2 has-text-centered px-4">
+                    Atlanta Food Finder
+                </strong>
+            </div>
 
-<nav class="navbar is-fixed-top" role="navigation" aria-label="main navigation">
-    <div class="navbar-brand">
-        <strong class="is-size-2 has-text-centered px-4">
-            Atlanta Food Finder
-        </strong>
+            <div class="navbar-menu">
+                <div class="navbar-start">
+                    <a class="navbar-item" href="/foodFinder">
+                        Home
+                    </a>
+
+                    <a class="navbar-item" href="/foodFinder/favorites">
+                        Favorites
+                    </a>
+
+                    <a class="navbar-item" href="/foodFinder/settings">
+                        Settings
+                    </a>
+
+                </div>
+            </div>
+        </nav>
     </div>
-
-    <div class="navbar-menu">
-        <div class="navbar-start">
-            <a class="navbar-item" href="/foodFinder">
-                Home
-            </a>
-
-            <a class="navbar-item" href="/foodFinder/favorites">
-                Favorites
-            </a>
-
-            <a class="navbar-item" href="/foodFinder/settings">
-                Settings
-            </a>
-
-        </div>
-    </div>
-</nav>
-
-<section class="section mt-3">
-    <div class="columns is-vcentered">
-        <div class='column is-half'>
-            <div class="control">
-                <input class="input is-rounded" type="text" placeholder="Search restaurants or zip code" />
+    <div class="hero-body">
+        <div class="container is-fluid" style="height: 85vh;">
+            <div class="columns is-vcentered" style="height: 85vh;">
+                <div class='column is-half'>
+                    <div class="control">
+                        <input class="input is-rounded" type="text" placeholder="Search restaurants or zip code" />
+                    </div>
+                </div>
+                <div class='column is-half'>
+                    <iframe width="100%" style="border:0; height: 85vh; " loading="lazy" allowfullscreen src="https://www.google.com/maps/embed/v1/view?zoom=11&center=33.7488%2C-84.3877&key=AIzaSyB8y_QBXEuxLZUo4xlKs9mKb622hwlOJMw"></iframe>
+                </div>
             </div>
         </div>
-        <div class='column is-half'>
-            MAP
-        </div>
+    </div>
+    <div class="hero-foot">
+
     </div>
 </section>
 </body>
