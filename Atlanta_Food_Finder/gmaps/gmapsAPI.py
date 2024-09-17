@@ -1,11 +1,12 @@
 import googlemaps # pip install googlemaps
 import requests
 from flask import Flask, request, jsonify # pip install Flask
-
-API_KEY = "AIzaSyB8y_QBXEuxLZUo4xlKs9mKb622hwlOJMw"
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 # Create googlemaps client object
-gmaps = googlemaps.Client(key=API_KEY)
+gmaps = googlemaps.Client(key=os.getenv('GMAPS_API_KEY'))
 
 apps = Flask(__name__)
 
