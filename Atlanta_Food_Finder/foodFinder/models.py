@@ -6,7 +6,7 @@ class Restaurant(models.Model):
     name = models.CharField(max_length=100)
     address = models.TextField()
 
-class Guests(models.Model):
+class Guest(models.Model):
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     location = models.CharField(max_length=100)

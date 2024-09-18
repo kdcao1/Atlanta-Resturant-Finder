@@ -1,7 +1,7 @@
 from lib2to3.fixes.fix_input import context
 
 from django.shortcuts import render, redirect
-from .models import Guests, Restaurant
+from .models import Guest, Restaurant
 from django.contrib import messages
 from .forms import ProfileForm
 from django.contrib.auth import authenticate, login
@@ -43,7 +43,7 @@ def settings(request):
 
 @login_required
 def settings(request):
-    guest = Guests.objects.get(user=request.user)
+    guest = Guest.objects.get(user=request.user)
 
     if request.method == "POST":
         form = ProfileForm(request.POST, request.FILES, instance=guest)
