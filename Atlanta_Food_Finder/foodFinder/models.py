@@ -12,4 +12,4 @@ class Guests(models.Model):
     location = models.CharField(max_length=100)
     profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
     favorite_restaurants = models.ManyToManyField(Restaurant, blank=True)
-    zipcode = models.CharField(max_length=10)
+    zipcode = models.CharField(max_length=10, default="00000", blank=True)
