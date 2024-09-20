@@ -1,0 +1,25 @@
+<script>
+    // Function to display the results
+    function displayResults(results) {
+        const resultsContainer = document.getElementById('results');
+        resultsContainer.innerHTML = '';  // Clear previous results
+
+        results.forEach((place) => {
+            const placeElement = document.createElement('div');
+            placeElement.innerHTML = `<h3>${place.name}</h3><p>Address: ${place.address}<br>Price Level: ${place.price_level}<br>Rating: ${place.rating}</p>`;
+            resultsContainer.appendChild(placeElement);
+        });
+    }
+
+    // Handle form submission
+    async function searchRestaurants(event) {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+        const response = await fetch('/search', {
+            method: 'POST',
+            body: formData
+        });
+        const searchResults = await response.json();
+        displayResults(searchResults);
+    }
+</script>
