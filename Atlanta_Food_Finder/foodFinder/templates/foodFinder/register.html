@@ -1,0 +1,41 @@
+<!-- code for the register.html front end page -->
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Registration</title>
+    <link rel="stylesheet" href="{% static 'foodFinder/css/bulma.css' %}">
+</head>
+<body>
+    <h1>Register</h1>
+    <form id="registration-form" method="POST">
+        {% csrf_token %}
+
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+
+        <label for="first_name">First Name:</label>
+        <input type="text" id="first_name" name="first_name" required>
+
+        <label for="last_name">Last Name:</label>
+        <input type="text" id="last_name" name="last_name" required>
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required>
+
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+
+        <label for="password2">Confirm Password:</label>
+        <input type="password" id="password2" name="password2" required>
+
+        <!-- submit button code -->
+        <button type="submit">Register</button>
+    </form>
+
+    <script src="scripts.js"></script>
+
+</body>
+</html>
