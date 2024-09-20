@@ -8,7 +8,7 @@ load_dotenv()
 # Create googlemaps client object
 gmaps = googlemaps.Client(key=os.getenv('GMAPS_API_KEY'))
 
-apps = Flask(__name__)
+app = Flask(__name__)
 
 # some location stuff
 geocode_result = gmaps.geocode('Atlanta, GA')
@@ -41,16 +41,25 @@ def get_places(atlanta_lat_lng, radius=5000, keyword=None, open_now=None, price_
             'rating': place.get('rating', 'N/A')
         })
 
+
+
+    print("Fetched Restaurants:")  # This prints a message to the console
+    for place in filtered_places:
+        print(place['name'])
+
+
     # Return the filtered results
     return filtered_places[:20]
 
 
 # Self explanatory
+@app.route('/initial', methods=['GET'])
 def initial_load():
     places = get_places(atlanta_lat_lng)
     return jsonify({'places': places})
 
 # Search function
+@app.route('/search', methods=['POST'])
 def search():
     # Get the user preferences from the request
     data = request.get_json()
@@ -72,8 +81,7 @@ def search():
     return jsonify({'places': places})
 
 if __name__ == '__main__':
-    apps.run(debug=True)
-
+    app.run(debug=True)
 
 
 
