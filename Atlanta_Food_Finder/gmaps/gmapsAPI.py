@@ -41,8 +41,6 @@ def get_places(atlanta_lat_lng, radius=5000, keyword=None, open_now=None, price_
             'rating': place.get('rating', 'N/A')
         })
 
-
-
     print("Fetched Restaurants:")  # This prints a message to the console
     for place in filtered_places:
         print(place['name'])
