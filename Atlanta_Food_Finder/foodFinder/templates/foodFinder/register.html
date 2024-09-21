@@ -6,36 +6,80 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Registration</title>
-    <link rel="stylesheet" href="{% static 'foodFinder/css/bulma.css' %}">
+    <link rel="stylesheet" href="{% static 'foodFinder/css/styles.css' %}">
+    <style>
+        body {
+            background: linear-gradient(to right, #f0f4f8, #e2e8f0);
+            font-family: 'Roboto', sans-serif;
+        }
+        .registration-form {
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .button {
+            width: 100%;
+        }
+    </style>
+
 </head>
 <body>
-    <h1>Register</h1>
-    <form id="registration-form" method="POST">
-        {% csrf_token %}
-
-        <label for="username">Username:</label>
-        <input type="text" id="username" name="username" required>
-
-        <label for="first_name">First Name:</label>
-        <input type="text" id="first_name" name="first_name" required>
-
-        <label for="last_name">Last Name:</label>
-        <input type="text" id="last_name" name="last_name" required>
-
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email" required>
-
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password" required>
-
-        <label for="password2">Confirm Password:</label>
-        <input type="password" id="password2" name="password2" required>
-
-        <!-- submit button code -->
-        <button type="submit">Register</button>
-    </form>
-
-    <script src="scripts.js"></script>
+    <div class="registration-form">
+        <h1 class="title has-text-centered">Register Your Account!</h1>
+        {% if messages %}
+            {% for message in messages %}
+                <div class="notification is-danger">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+        <form method="POST">
+            {% csrf_token %}
+            <div class="field">
+                <label class="label" for="username">Username</label>
+                <div class="control">
+                    <input class="input" type="text" id="username" name="username" required>
+                </div>
+            </div>
+            <div class="field">
+                <label class="label" for="first_name">First Name</label>
+                <div class="control">
+                    <input class="input" type="text" id="first_name" name="first_name" required>
+                </div>
+            </div>
+            <div class="field">
+                <label class="label" for="last_name">Last Name</label>
+                <div class="control">
+                    <input class="input" type="text" id="last_name" name="last_name" required>
+                </div>
+            </div>
+            <div class="field">
+                <label class="label" for="email">Email</label>
+                <div class="control">
+                    <input class="input" type="email" id="email" name="email" required>
+                </div>
+            </div>
+            <div class="field">
+                <label class="label" for="password">Password</label>
+                <div class="control">
+                    <input class="input" type="password" id="password" name="password" required>
+                </div>
+            </div>
+            <div class="field">
+                <label class="label" for="password2">Confirm Password</label>
+                <div class="control">
+                    <input class="input" type="password" id="password2" name="password2" required>
+                </div>
+            </div>
+            <div class="field">
+                <div class="control">
+                    <button type="submit" class="button is-primary"> Register Account</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <script src="{% static 'foodFinder/js/scripts.js' %}"></script>
 
 </body>
 </html>
