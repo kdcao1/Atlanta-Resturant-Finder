@@ -7,3 +7,5 @@
 /dataSources/
 /dataSources.local.xml
 Atlanta_Food_Finder/.env
+/db.sqlite3
+/foodFinder/__pycache__/
