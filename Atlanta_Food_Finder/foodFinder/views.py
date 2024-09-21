@@ -12,7 +12,10 @@ from .models import *
 
 
 def home(request):
-    return render(request, "foodFinder/home.html", context=None)
+    if not request.user.is_authenticated:
+        return redirect('/foodFinder/login/')
+    else:
+        return render(request, "foodFinder/home.html", context=None)
 
 
 def register(request):
