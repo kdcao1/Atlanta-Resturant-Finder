@@ -4,4 +4,4 @@ from .models import Guest
 class ProfileForm(forms.ModelForm):
     class Meta:
         model = Guest
-        fields = ['profile_picture', 'zipcode', 'favorite_restaurants']
+        fields = ['location', 'profile_picture', 'favorite_restaurants']
