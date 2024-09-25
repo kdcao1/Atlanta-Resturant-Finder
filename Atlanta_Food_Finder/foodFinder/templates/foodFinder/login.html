@@ -3,12 +3,12 @@
 {% load static %}
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, height=device-height , initial-scale=1">
     <title>Atlanta Food Finder</title>
     <link rel="stylesheet" href="{% static "/foodFinder/css/bulma.css" %}">
 </head>
 <body>
-    <section class="section is-large is-vcentered">
+    <section class="section is-medium is-vcentered">
         <div class="is-flex is-flex-direction-column is-align-self-center is-align-content-center">
             <h1 class="title is-size-1 has-text-centered">Atlanta Food Finder</h1>
             <div class="columns is-centered">
@@ -29,7 +29,7 @@
                             </div>
                         {% endif %}
                         <input class="button mt-5 is-fullwidth is-primary" type="submit" value="Login" />
-                        <a class="button is-primary is-light mt-3 is-fullwidth">Register</a>
+                        <a class="button is-primary is-light mt-3 is-fullwidth" href="/foodFinder/register" >Register</a>
                     </div>
                 </form>
             </div>
