@@ -34,7 +34,8 @@ def get_places(lat_lng, radius=5000, keyword=None, open_now=None, price_level=No
             'name': place['name'],
             'address': place.get('vicinity'),
             'price_level': place.get('price_level', 'N/A'),
-            'rating': place.get('rating', 'N/A')
+            'rating': place.get('rating', 'N/A'),
+            'status': place.get('opening_hours'),
         })
 
     # Test print to verify that the restaurants are being fetched correctly
@@ -68,6 +69,6 @@ def search():
     return jsonify({'places': places})
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=443, debug=True)
 
 # To access server after running and loading the pulls, go to http://127.0.0.1:5000/initial

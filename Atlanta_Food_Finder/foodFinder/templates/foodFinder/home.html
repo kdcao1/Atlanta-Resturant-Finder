@@ -86,7 +86,7 @@
 <script>
 // Function to fetch initial data from Flask server
 function fetchInitialData() {
-    fetch('http://127.0.0.1:5000/initial')
+    fetch('http://127.0.0.1:443/initial')
         .then(response => response.json())
         .then(data => {
             displayRestaurants(data.places);
@@ -117,16 +117,42 @@ function displayRestaurants(places) {
 
     places.forEach(place => {
         const card = document.createElement('div');
-        card.className = 'card';
+        card.className = 'card mx-2';
+        function createStarRating(rating) {
+            let starsHTML = '';
+            for (let i = 1; i <= place.rating; i++) { // Assuming a maximum of 5 stars
+                starsHTML += `<span class="star ${i <= rating ? 'filled' : ''}">&#9733;</span>`; // Unicode star character
+            }
+            return starsHTML; // Return the generated star HTML
+        }
+        function createPriceRating(priceLevel) {
+            let priceHTML = '';
+            for (let i = 0; i < place.price_level; i++) {
+                priceHTML += '$'; // Append dollar signs based on price level
+            }
+            return priceHTML; // Return the generated dollar signs HTML
+        }
+        function checkOpenStatus(place) {
+            // Check if the open_now property exists and is true or false
+            if (place.status.open_now) {
+                return "Open"; // If true, return "Open"
+            } else {
+                return "Closed"; // If false, return "Closed"
+            }
+        }
         card.innerHTML = `
-            <header class='card-header'>
-                <p class='card-header-title'>${place.name}</p>
-            </header>
-            <div class='card-content'>
-                <p><strong>Address:</strong> ${place.address}</p>
-                <p><strong>Price Level:</strong> ${place.price_level}</p>
-                <p><strong>Rating:</strong> ${place.rating}</p>
-            </div>`;
+            <div class='card-content is-flex is-flex-direction-row is-justify-content-space-between'>
+                <div class='is-size-2'>
+                    ${place.name}
+                    <div class="is-size-5">${createStarRating(place.rating)} ${createPriceRating(place.price_level)} ${checkOpenStatus(place)}</div>
+                    <p class="is-size-6">${place.address}</p>
+                </div>
+                <div class='is-size-2'>&#9825; &#9829;</div>
+            </div>
+            <footer class="card-footer">
+                <a href="${place.website}" class="card-footer-item">Website</a>
+            </footer>
+        `;
         container.appendChild(card);
     });
 }
