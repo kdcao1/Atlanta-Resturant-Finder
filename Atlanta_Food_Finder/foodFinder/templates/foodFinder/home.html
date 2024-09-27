@@ -64,10 +64,15 @@
         <div class="container is-fluid mt-4" style="height: 85vh;">
             <div class="columns is-vcentered" style="height: 85vh;">
                 <div class='column is-half' style="height: 85vh;">
-                    <div class="control">
-                        <label for="searchBar" class="label">Search</label>
-                        <input class="input is-rounded" id="searchBar" name="searchBar" type="text" placeholder="Search restaurants or zip code" />
-                        <button id="searchButton" class="button is-primary mt-2">Search</button>
+                    <div class="control is-flex is-flex-direction-row is-justify-content-space-between">
+                        <div class="is-flex-grow-1 mr-2">
+                            <input class="input is-rounded" id="searchBar" name="searchBar" type="text" placeholder="Search restaurants" />
+                        </div>
+                        <div>
+                            <button id="searchButton" class="button is-primary is-normal">Search</button>
+                            <button id="searchButton" class="button is-primary is-normal">Filter</button>
+                            <button id="searchButton" class="button is-primary is-normal">Sort</button>
+                        </div>
                     </div>
                     <!-- Add a container for restaurant cards -->
                     <div id="restaurant-cards" class='card-container'></div>
@@ -96,7 +101,7 @@ function fetchInitialData() {
 
 // Function to search for restaurants based on user input
 function searchRestaurants(keyword) {
-    fetch('http://127.0.0.1:5000/search', {
+    fetch('http://127.0.0.1:443/search', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
