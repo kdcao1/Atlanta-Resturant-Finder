@@ -24,11 +24,25 @@
             <a class="navbar-item" href="/foodFinder/favorites">
                 Favorites
             </a>
-
-            <a class="navbar-item" href="/foodFinder/settings">
-                Settings
-            </a>
-
+        </div>
+        <div class="navbar-end">
+            {% if user.is_authenticated %}
+                <figure class="image is-64x64 pt-2 pr-3">
+                    <a href="{% url 'settings' %}">
+                        <img class="is-rounded is-square"
+                             src="{% if user.guest.profile_picture %}{{ user.guest.profile_picture.url }}{% else %}{% static 'images/default_profile.png' %}{% endif %}"
+                             alt="Profile Picture"/>
+                    </a>
+                </figure>
+            {% else %}
+                <figure class="image is-64x64 pt-2 pr-3">
+                    <a href="{% url 'settings' %}">
+                        <img class="is-rounded is-square"
+                             src="{% static 'images/default_profile.png' %}"
+                             alt="Guest Profile Picture"/>
+                    </a>
+                </figure>
+            {% endif %}
         </div>
     </div>
 </nav>

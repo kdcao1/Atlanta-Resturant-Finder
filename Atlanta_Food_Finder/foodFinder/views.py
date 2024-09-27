@@ -1,14 +1,13 @@
 from lib2to3.fixes.fix_input import context
 
 from django.shortcuts import render, redirect
-from .models import Guest, Restaurant
+from .models import Guest
 from .forms import ProfileForm
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.contrib import messages
-from .models import *
+import base64
 
 
 def home(request):
@@ -86,7 +85,25 @@ def settings(request):
 
     if request.method == "POST":
         form = ProfileForm(request.POST, request.FILES, instance=guest)
+
+        # Handle the cropped image data if provided
+        cropped_image_data = request.POST.get('cropped_image_data', None)
+
         if form.is_valid():
+            if cropped_image_data:
+                # Logic to handle the cropped image
+                from django.core.files.base import ContentFile
+                import base64
+
+                # Decode the cropped image data
+                format, imgstr = cropped_image_data.split(';base64,')
+                ext = format.split('/')[-1]
+                data = ContentFile(base64.b64decode(imgstr), name=f'{guest.user.username}_profile.{ext}')
+
+                # Save the cropped image to the guest profile
+                guest.profile_picture = data
+                guest.save()
+
             form.save()
             return redirect('settings')
     else:
@@ -94,5 +111,6 @@ def settings(request):
 
     context = {
         'form': form,
+        'guest': guest,  # Include guest to show current profile picture
     }
     return render(request, 'foodFinder/settings.html', context)

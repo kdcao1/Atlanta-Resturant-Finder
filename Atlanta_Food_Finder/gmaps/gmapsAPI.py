@@ -1,9 +1,10 @@
 import googlemaps # pip install googlemaps
 import requests
-from flask import Flask, request, jsonify # pip install Flask
+from flask import Flask, request, jsonify, render_template  # pip install Flask
 import os
 from dotenv import load_dotenv
 load_dotenv()
+
 
 # Create googlemaps client object
 gmaps = googlemaps.Client(key=os.getenv('GMAPS_API_KEY'))
@@ -49,6 +50,11 @@ def get_places(atlanta_lat_lng, radius=5000, keyword=None, open_now=None, price_
     # Return the filtered results
     return filtered_places[:20]
 
+
+# ROute to serve HTML card page
+@app.route('/')
+def card_page():
+    return render_template('card.html')
 
 # Self explanatory
 @app.route('/initial', methods=['GET'])

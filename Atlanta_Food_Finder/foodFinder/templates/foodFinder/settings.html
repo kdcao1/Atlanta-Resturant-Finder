@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Atlanta Food Finder</title>
     <link rel="stylesheet" href="{% static "./foodFinder/css/bulma.css" %}">
+    <link rel="stylesheet" href="{% static 'foodFinder/css/zoom.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css"/>
 </head>
 <body>
 <nav class="navbar is-fixed-top" role="navigation" aria-label="main navigation">
@@ -24,29 +26,106 @@
             <a class="navbar-item" href="/foodFinder/favorites">
                 Favorites
             </a>
-
-            <a class="navbar-item" href="/foodFinder/settings">
-                Settings
-            </a>
-
+        </div>
+        <div class="navbar-end">
+            {% if user.is_authenticated %}
+                <figure class="image is-64x64 pt-2 pr-3">
+                    <a href="{% url 'settings' %}">
+                        <img class="is-rounded is-square"
+                             src="{% if user.guest.profile_picture %}{{ user.guest.profile_picture.url }}{% else %}{% static 'images/default_profile.png' %}{% endif %}"
+                             alt="Profile Picture"/>
+                    </a>
+                </figure>
+            {% else %}
+                <figure class="image is-64x64 pt-2 pr-3">
+                    <a href="{% url 'settings' %}">
+                        <img class="is-rounded is-square"
+                             src="{% static 'images/default_profile.png' %}"
+                             alt="Guest Profile Picture"/>
+                    </a>
+                </figure>
+            {% endif %}
         </div>
     </div>
 </nav>
 
 <section class="section mt-3">
     <div class="container">
-        <h1 class="title">
-            Settings
-        </h1>
-        <p class="subtitle">
-            Settings page
-        </p>
-
+        <h1 class="title">Settings</h1>
         <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
             {{ form.as_p }}
+
+            <div class="field">
+                <label class="label">Crop & Adjust Profile Picture</label>
+                <figure class="image is-128x128">
+                    <img id="profileImagePreview"
+                         src="{% if guest.profile_picture %}{{ guest.profile_picture.url }}{% else %}{% static 'images/default_profile.png' %}{% endif %}"
+                         alt="Profile Picture">
+                </figure>
+                <canvas id="profileImageCanvas" style="display:none;"></canvas> <!-- Canvas for cropping -->
+                <input type="hidden" name="cropped_image_data" id="croppedImageData"> <!-- Hidden input to hide cropped image data-->
+            </div>
+
+            <!-- Location Field -->
+            <div class="field mt-5">
+                <label class="label">Location</label>
+                <input type="text" name="location" class="input" value="{{ guest.location }}" placeholder="Enter your location">
+            </div>
+
             <button class="button is-primary" type="submit">Save Changes</button>
         </form>
+
+        <!-- cropper.js -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+        <script>
+            const profileImagePreview = document.getElementById('profileImagePreview');
+            const profilePictureInput = document.getElementById('profilePictureInput');
+            const croppedImageData = document.getElementById('croppedImageData');
+            const zoomSlider = document.getElementById('zoomSlider');
+            let cropper;
+
+            // Initialize Cropper when the page loads
+            window.onload = function () {
+                cropper = new Cropper(profileImagePreview, {
+                    aspectRatio: 1, // Square crop
+                    viewMode: 1, // Restrict the image within the crop box
+                    scalable: true, // Allow image scaling
+                    zoomable: true, // Allow zooming
+                    crop(event) {
+                        // You can access crop event details if needed
+                        // console.log(event.detail);
+                    }
+                });
+            };
+
+            // Update image preview and initialize Cropper when a file is chosen
+            profilePictureInput.addEventListener('change', function (event) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    profileImagePreview.src = e.target.result; // Update image preview
+                    if (cropper) {
+                        cropper.replace(e.target.result); // Replace the image in the cropper
+                    }
+                };
+                reader.readAsDataURL(event.target.files[0]);
+            });
+
+            // Handle zoom manually using the slider
+            zoomSlider.addEventListener('input', function () {
+                const zoomLevel = zoomSlider.value;
+                cropper.zoomTo(zoomLevel); // Cropper.js handles the zooming
+            });
+
+            // Before submitting the form, convert the cropped image to base64 and set it in the hidden input
+            document.querySelector('form').addEventListener('submit', function (event) {
+                const croppedCanvas = cropper.getCroppedCanvas({
+                    width: 128, // Output size
+                    height: 128,
+                });
+                croppedImageData.value = croppedCanvas.toDataURL('image/png'); // Convert to base64 and set the hidden input value
+            });
+        </script>
     </div>
 </section>
 
