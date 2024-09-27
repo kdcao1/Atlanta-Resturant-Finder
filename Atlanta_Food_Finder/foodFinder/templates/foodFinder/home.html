@@ -6,6 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Atlanta Food Finder</title>
     <link rel="stylesheet" href="{% static "./foodFinder/css/bulma.css" %}">
+    <style>
+        .card-container {
+            height: calc(85vh - 100px); /* Adjust height based on other elements like the search bar */
+            overflow-y: auto;
+            margin-top: 20px; /* Add some spacing from the search bar */
+        }
+
+        .card {
+            margin-bottom: 10px; /* Spacing between cards */
+        }
+    </style>
 </head>
 <body>
 <section class="hero is-fullheight">
@@ -57,15 +68,13 @@
                         <label for="searchBar" class="label">Search</label>
                         <input class="input is-rounded" id="searchBar" name="searchBar" type="text" placeholder="Search restaurants or zip code" />
                     </div>
+                    <!-- Add a container for restaurant cards -->
+                    <div id="restaurant-cards" class='card-container'></div>
                 </div>
                 <div class='column is-half'>
-                    <iframe width="100%" style="border:0; height: 80vh; " loading="lazy" allowfullscreen src="https://www.google.com/maps/embed/v1/view?zoom=11&center=33.7488%2C-84.3877&key=AIzaSyB8y_QBXEuxLZUo4xlKs9mKb622hwlOJMw"></iframe>
+                    <iframe width="100%" style="border:0; height: 80vh;" loading="lazy" allowfullscreen src="https://www.google.com/maps/embed/v1/view?zoom=11&center=33.7488%2C-84.3877&key=AIzaSyB8y_QBXEuxLZUo4xlKs9mKb622hwlOJMw"></iframe>
                 </div>
             </div>
-
-            <!-- Add a container for restaurant cards -->
-            <div id="restaurant-cards" class='columns is-multiline'></div>
-
         </div>
     </div>
     <div class="hero-foot">
@@ -91,17 +100,15 @@ function displayRestaurants(places) {
 
     places.forEach(place => {
         const card = document.createElement('div');
-        card.className = 'column is-one-quarter';
+        card.className = 'card';
         card.innerHTML = `
-            <div class='card'>
-                <header class='card-header'>
-                    <p class='card-header-title'>${place.name}</p>
-                </header>
-                <div class='card-content'>
-                    <p><strong>Address:</strong> ${place.address}</p>
-                    <p><strong>Price Level:</strong> ${place.price_level}</p>
-                    <p><strong>Rating:</strong> ${place.rating}</p>
-                </div>
+            <header class='card-header'>
+                <p class='card-header-title'>${place.name}</p>
+            </header>
+            <div class='card-content'>
+                <p><strong>Address:</strong> ${place.address}</p>
+                <p><strong>Price Level:</strong> ${place.price_level}</p>
+                <p><strong>Rating:</strong> ${place.rating}</p>
             </div>`;
         container.appendChild(card);
     });
