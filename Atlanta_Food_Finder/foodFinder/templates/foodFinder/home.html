@@ -47,11 +47,57 @@
                     <iframe width="100%" style="border:0; height: 85vh; " loading="lazy" allowfullscreen src="https://www.google.com/maps/embed/v1/view?zoom=11&center=33.7488%2C-84.3877&key=AIzaSyB8y_QBXEuxLZUo4xlKs9mKb622hwlOJMw"></iframe>
                 </div>
             </div>
+
+            <!-- Add a container for restaurant cards -->
+            <div id="restaurant-cards" class='columns is-multiline'></div>
+
         </div>
     </div>
     <div class="hero-foot">
 
     </div>
 </section>
+<<<<<<< Updated upstream
+=======
+
+<script>
+// Function to fetch initial data from Flask server
+function fetchInitialData() {
+    fetch('/initial')
+        .then(response => response.json())
+        .then(data => {
+            displayRestaurants(data.places);
+        })
+        .catch(error => console.error('Error fetching initial data:', error));
+}
+
+// Function to display restaurants as cards
+function displayRestaurants(places) {
+    const container = document.getElementById('restaurant-cards');
+    container.innerHTML = ''; // Clear existing content
+
+    places.forEach(place => {
+        const card = document.createElement('div');
+        card.className = 'column is-one-quarter';
+        card.innerHTML = `
+            <div class='card'>
+                <header class='card-header'>
+                    <p class='card-header-title'>${place.name}</p>
+                </header>
+                <div class='card-content'>
+                    <p><strong>Address:</strong> ${place.address}</p>
+                    <p><strong>Price Level:</strong> ${place.price_level}</p>
+                    <p><strong>Rating:</strong> ${place.rating}</p>
+                </div>
+            </div>`;
+        container.appendChild(card);
+    });
+}
+
+// Call function to fetch initial data on page load
+document.addEventListener('DOMContentLoaded', fetchInitialData);
+</script>
+
+>>>>>>> Stashed changes
 </body>
 </html>

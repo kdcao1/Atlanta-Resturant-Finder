@@ -1,33 +1,27 @@
-import googlemaps # pip install googlemaps
-import requests
-from flask import Flask, request, jsonify # pip install Flask
-import os
-from dotenv import load_dotenv
-load_dotenv()
-
-# Create googlemaps client object
-gmaps = googlemaps.Client(key=os.getenv('GMAPS_API_KEY'))
+from flask import Flask, request, jsonify
+import googlemaps
 
 app = Flask(__name__)
 
-# some location stuff
-geocode_result = gmaps.geocode('Atlanta, GA')
-location = geocode_result[0]['geometry']['location']
+# Initialize the Google Maps client
+API_KEY = 'AIzaSyB8y_QBXEuxLZUo4xlKs9mKb622hwlOJMw'
+gmaps = googlemaps.Client(key=API_KEY)
+
+# Get coordinates for Atlanta, GA
 atlanta_lat_lng = (33.7490, -84.3880)
 
-# Main function to get places
-def get_places(atlanta_lat_lng, radius=5000, keyword=None, open_now=None, price_level=None, rating_threshold=None, page_token=None):
+# Function to get places from Google Maps API
+def get_places(lat_lng, radius=5000, keyword=None, open_now=None, price_level=None, rating_threshold=None):
     # Call the Google Maps API
     places_result = gmaps.places_nearby(
-        location=atlanta_lat_lng,
+        location=lat_lng,
         radius=radius,
         type='restaurant',
         keyword=keyword if keyword else None,
-        open_now=open_now,
-        page_token=page_token
+        open_now=open_now
     )
 
-    # filtered places if filtered
+    # Filter by price level and rating, if provided
     filtered_places = []
     for place in places_result['results']:
         if price_level and place.get('price_level') != int(price_level):
@@ -41,22 +35,21 @@ def get_places(atlanta_lat_lng, radius=5000, keyword=None, open_now=None, price_
             'rating': place.get('rating', 'N/A')
         })
 
+    # Test print to verify that the restaurants are being fetched correctly
     print("Fetched Restaurants:")  # This prints a message to the console
     for place in filtered_places:
-        print(place['name'])
+        print(place['name'])  # This prints each restaurant name
 
-
-    # Return the filtered results
+    # Return the filtered list (limit to 20 results)
     return filtered_places[:20]
 
-
-# Self explanatory
+# Route to get the initial 20 locations
 @app.route('/initial', methods=['GET'])
 def initial_load():
     places = get_places(atlanta_lat_lng)
     return jsonify({'places': places})
 
-# Search function
+# Route to get the updated 20 locations based on user preferences
 @app.route('/search', methods=['POST'])
 def search():
     # Get the user preferences from the request
@@ -66,7 +59,7 @@ def search():
     rating_threshold = data.get('rating_threshold')
     open_now = data.get('open_now')
 
-    # Fetch places with updated prefs
+    # Fetch the places with the updated preferences
     places = get_places(
         lat_lng=atlanta_lat_lng,
         keyword=keyword,
@@ -75,54 +68,8 @@ def search():
         rating_threshold=rating_threshold
     )
 
-    # Return mew results
+    # Return the new results
     return jsonify({'places': places})
 
 if __name__ == '__main__':
     app.run(debug=True)
-
-
-
-
-
-
-# def index():
-#     #initial nearest 20 results
-#     places_result = gmaps.places_nearby(location=atlanta_lat_lng, radius=4000, type='restaurant')
-#     results = [{
-#         'name': place['name'],
-#         'address': place.get('vicinity'),
-#         'price_level': place.get('price_level', 'N/A'),
-#         'rating': place.get('rating', 'N/A')
-#     } for place in places_result['results'][:20]]
-    
-#     return jsonify(results)
-
-# def search():
-#     # Obtain user inputs and filters
-#     keyword = request.args.get('keyword')
-#     price_level = request.get.args.get('price_level')
-#     rating_threshold = request.args.get('rating_threshold')
-#     open_now = request.args.get('open_now') == 'yes'
-
-#     # Applying the search
-#     places_results = gmaps.places_nearby(location=atlanta_lat_lng, radius=4000, type='restaurant', keyword=keyword if keyword else None)
-
-#     # Filtered results
-#     filtered_results = []
-#     for place in places_results['results']:
-#         if price_level and place.get('price_level') != price_level:
-#             continue
-#         if rating_threshold and place.get('rating') < rating_threshold:
-#             continue
-#         filtered_results.append({
-#             'name': place['name'],
-#             'address': place.get('vicinity'),
-#             'price_level': place.get('price_level'),
-#             'rating': place.get('rating'),
-#         })
-
-#     return jsonify(filtered_results)
-
-# if __name__ == '__main__':
-#     apps.run(debug=True)
