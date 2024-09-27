@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+{% load static %}
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Team 55</title>
+    <link rel="stylesheet" href="{% static "./foodFinder/css/bulma.css" %}">
+    <style>
+        :root {
+            --bulma-primary-h: 125deg;
+            --bulma-primary-s: 18%;
+            --bulma-primary-l: 58%;
+        }
+    </style>
+</head>
+<body>
+<section class="hero is-fullheight">
+    <div class="hero-head">
+        <nav class="navbar is-fixed-top" role="navigation" aria-label="main navigation">
+            <div class="navbar-brand">
+                <strong class="is-size-2 has-text-centered px-4">
+                    Team 55
+                </strong>
+            </div>
+
+            <div class="navbar-menu">
+                <div class="navbar-start">
+                    <a class="navbar-item" href="/">
+                        Home
+                    </a>
+
+                    <a class="navbar-item" href="/teamMembers">
+                        Team Members
+                    </a>
+                </div>
+                <div class="navbar-end">
+                </div>
+            </div>
+        </nav>
+    </div>
+    <div class="hero-body is-flex is-flex-direction-row is-justify-content-flex-start">
+        <div class="container" style="height: 90vh">
+            <strong class="title is-1">
+                Team Members
+            </strong>
+            <div class="section">
+                <div class="card mt-3">
+                    <div class="card-content">
+                        <div class="content">
+                            <p class="title">Kevin Lin</p>
+                            Scrum Master, Full Stack
+                        </div>
+                    </div>
+                    <footer class="card-footer">
+                        <a href="https://github.com/kdcao1" class="card-footer-item">GitHub</a>
+                        <a href="https://www.linkedin.com/in/kevinlin121703/" class="card-footer-item">LinkedIn</a>
+                    </footer>
+                </div>
+                <div class="card mt-3">
+                    <div class="card-content">
+                        <div class="content">
+                            <p class="title">Brian Zheng</p>
+                            Product Owner, Full Stack
+                        </div>
+                    </div>
+                    <footer class="card-footer">
+                        <a href="https://github.com/MudkipzRawsme" class="card-footer-item">GitHub</a>
+                    </footer>
+                </div>
+                <div class="card mt-3">
+                    <div class="card-content">
+                        <div class="content">
+                            <p class="title">Grant Polazzo</p>
+                            Dev, Full Stack
+                        </div>
+                    </div>
+                    <footer class="card-footer">
+                        <a href="https://github.com/thatdudegrantt" class="card-footer-item">GitHub</a>
+                    </footer>
+                </div>
+                <div class="card mt-3">
+                    <div class="card-content">
+                        <div class="content">
+                            <p class="title">Jayce Walzer</p>
+                            Dev, Backend
+                        </div>
+                    </div>
+                    <footer class="card-footer">
+                        <a href="https://github.com/jaycewalzer" class="card-footer-item">GitHub</a>
+                    </footer>
+                </div>
+                <div class="card mt-3">
+                    <div class="card-content">
+                        <div class="content">
+                            <p class="title">Rayan Das</p>
+                            Dev, Frontend
+                        </div>
+                    </div>
+                    <footer class="card-footer">
+                        <a href="https://github.com/RayanDas06" class="card-footer-item">GitHub</a>
+                    </footer>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="hero-foot">
+
+    </div>
+</section>
+</body>
+</html>

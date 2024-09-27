@@ -96,3 +96,9 @@ def settings(request):
         'form': form,
     }
     return render(request, 'foodFinder/settings.html', context)
+
+def team(request):
+    return render(request, 'foodFinder/team.html')
+
+def team_members(request):
+    return render(request, 'foodFinder/teamMembers.html')
