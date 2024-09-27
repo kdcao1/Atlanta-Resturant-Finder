@@ -67,6 +67,7 @@
                     <div class="control">
                         <label for="searchBar" class="label">Search</label>
                         <input class="input is-rounded" id="searchBar" name="searchBar" type="text" placeholder="Search restaurants or zip code" />
+                        <button id="searchButton" class="button is-primary mt-2">Search</button>
                     </div>
                     <!-- Add a container for restaurant cards -->
                     <div id="restaurant-cards" class='card-container'></div>
@@ -93,6 +94,22 @@ function fetchInitialData() {
         .catch(error => console.error('Error fetching initial data:', error));
 }
 
+// Function to search for restaurants based on user input
+function searchRestaurants(keyword) {
+    fetch('http://127.0.0.1:5000/search', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ keyword: keyword }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        displayRestaurants(data.places);
+    })
+    .catch(error => console.error('Error searching for restaurants:', error));
+}
+
 // Function to display restaurants as cards
 function displayRestaurants(places) {
     const container = document.getElementById('restaurant-cards');
@@ -113,6 +130,14 @@ function displayRestaurants(places) {
         container.appendChild(card);
     });
 }
+
+// Add event listener to search button
+document.getElementById('searchButton').addEventListener('click', function() {
+    const keyword = document.getElementById('searchBar').value;
+    if (keyword) {
+        searchRestaurants(keyword);
+    }
+});
 
 // Call function to fetch initial data on page load
 document.addEventListener('DOMContentLoaded', fetchInitialData);

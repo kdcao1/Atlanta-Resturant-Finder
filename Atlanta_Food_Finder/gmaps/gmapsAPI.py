@@ -2,7 +2,6 @@ from flask import Flask, request, jsonify # pip install Flask
 import googlemaps # pip install googlemaps
 from flask_cors import CORS # pip install flask_cors
 
-
 app = Flask(__name__)
 CORS(app)
 
@@ -39,9 +38,9 @@ def get_places(lat_lng, radius=5000, keyword=None, open_now=None, price_level=No
         })
 
     # Test print to verify that the restaurants are being fetched correctly
-    print("Fetched Restaurants:")  # This prints a message to the console
+    print("Fetched Restaurants:")
     for place in filtered_places:
-        print(place['name'])  # This prints each restaurant name
+        print(place['name'])
 
     # Return the filtered list (limit to 20 results)
     return filtered_places[:20]
@@ -58,17 +57,11 @@ def search():
     # Get the user preferences from the request
     data = request.get_json()
     keyword = data.get('keyword')
-    price_level = data.get('price_level')
-    rating_threshold = data.get('rating_threshold')
-    open_now = data.get('open_now')
-
+    
     # Fetch the places with the updated preferences
     places = get_places(
         lat_lng=atlanta_lat_lng,
-        keyword=keyword,
-        open_now=open_now,
-        price_level=price_level,
-        rating_threshold=rating_threshold
+        keyword=keyword
     )
 
     # Return the new results
