@@ -1,7 +1,10 @@
 from flask import Flask, request, jsonify
 import googlemaps
+from flask_cors import CORS # pip install flask_cors
+
 
 app = Flask(__name__)
+CORS(app)
 
 # Initialize the Google Maps client
 API_KEY = 'AIzaSyB8y_QBXEuxLZUo4xlKs9mKb622hwlOJMw'

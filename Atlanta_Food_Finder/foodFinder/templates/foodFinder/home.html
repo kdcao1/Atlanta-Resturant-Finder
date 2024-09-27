@@ -76,7 +76,7 @@
 <script>
 // Function to fetch initial data from Flask server
 function fetchInitialData() {
-    fetch('/initial')
+    fetch('http://127.0.0.1:5000/initial')
         .then(response => response.json())
         .then(data => {
             displayRestaurants(data.places);
