@@ -1,22 +1,11 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="dark" style="scrollbar-width: none; overflow-y: hidden">
 {% load static %}
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Atlanta Food Finder</title>
     <link rel="stylesheet" href="{% static "./foodFinder/css/bulma.css" %}">
-    <style>
-        .card-container {
-            height: calc(85vh - 100px); /* Adjust height based on other elements like the search bar */
-            overflow-y: auto;
-            margin-top: 20px; /* Add some spacing from the search bar */
-        }
-
-        .card {
-            margin-bottom: 10px; /* Spacing between cards */
-        }
-    </style>
 </head>
 <body>
 <section class="hero is-fullheight">
@@ -75,7 +64,7 @@
                         </div>
                     </div>
                     <!-- Add a container for restaurant cards -->
-                    <div id="restaurant-cards" class='card-container'></div>
+                    <div id="restaurant-cards" class='card-container' style="scrollbar-width: none;"></div>
                 </div>
                 <div class='column is-half'>
                     <iframe width="100%" style="border:0; height: 80vh;" loading="lazy" allowfullscreen src="https://www.google.com/maps/embed/v1/view?zoom=11&center=33.7488%2C-84.3877&key=AIzaSyB8y_QBXEuxLZUo4xlKs9mKb622hwlOJMw"></iframe>
@@ -84,11 +73,18 @@
         </div>
     </div>
     <div class="hero-foot">
-
+        <footer class="footer">
+            <div class="content has-text-centered">
+                <p>
+                    <strong>Atlanta Food Finder</strong> by <a href="/">Team 55</a>.
+                </p>
+            </div>
+        </footer>
     </div>
 </section>
 
 <script>
+
 // Function to fetch initial data from Flask server
 function fetchInitialData() {
     fetch('http://127.0.0.1:443/initial')
@@ -118,8 +114,10 @@ function searchRestaurants(keyword) {
 // Function to display restaurants as cards
 function displayRestaurants(places) {
     const container = document.getElementById('restaurant-cards');
+    container.className = 'mt-2'
     container.innerHTML = ''; // Clear existing content
-
+    container.style.height = 'calc(85vh - 100px)'; // Set the height
+    container.style.overflowY = 'scroll'; // Allow vertical scrolling
     places.forEach(place => {
         const card = document.createElement('div');
         card.className = 'card mx-2';
@@ -146,7 +144,7 @@ function displayRestaurants(places) {
             }
         }
         card.innerHTML = `
-            <div class='card-content is-flex is-flex-direction-row is-justify-content-space-between'>
+            <div class='card-content is-flex is-flex-direction-row is-justify-content-space-between mx-2'>
                 <div class='is-size-2'>
                     ${place.name}
                     <div class="is-size-5">${createStarRating(place.rating)} ${createPriceRating(place.price_level)} ${checkOpenStatus(place)}</div>
@@ -155,7 +153,7 @@ function displayRestaurants(places) {
                 <div class='is-size-2'>&#9825; &#9829;</div>
             </div>
             <footer class="card-footer">
-                <a href="${place.website}" class="card-footer-item">Website</a>
+                <a href="${place.website}" class="card-footer-item">More</a>
             </footer>
         `;
         container.appendChild(card);
