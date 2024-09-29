@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container is-fluid" style="background-color: #1a1a1a; color: #ffffff; min-height: 100vh; padding: 20px;">
+  <div class="columns">
+    <div class="column is-two-thirds">
+      <div class="box" style="background-color: #2a2a2a; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+        <h1 class="title is-1" style="color: #ffffff;">{{ restaurant.name }}</h1>
+        <div class="level">
+          <div class="level-left">
+            <div class="level-item">
+              <span class="icon-text">
+                <span class="icon">
+                  <i class="fas fa-star" style="color: #ffd700;"></i>
+                </span>
+                <span>{{ restaurant.average_rating|floatformat:1 }}</span>
+              </span>
+            </div>
+            <div class="level-item">
+              <span class="icon-text">
+                <span class="icon">
+                  <i class="fas fa-dollar-sign" style="color: #4caf50;"></i>
+                </span>
+                <span>{{ restaurant.get_price_range_display }}</span>
+              </span>
+            </div>
+            <div class="level-item">
+              <span class="tag is-success">Open</span>
+            </div>
+          </div>
+        </div>
+
+        <p>{{ restaurant.address }}</p>
+        <p><strong>Cuisine:</strong> {{ restaurant.cuisine_type }}</p>
+      </div>
+
+      <div class="box" style="background-color: #2a2a2a; border-radius: 8px; padding: 20px;">
+        <h2 class="title is-4" style="color: #ffffff;">Open Hours</h2>
+        <table class="table is-fullwidth" style="background-color: transparent; color: #ffffff;">
+          <tbody>
+            {% for day, hours in restaurant.open_hours.items %}
+              <tr>
+                <td>{{ day|capfirst }}</td>
+                <td>{{ hours }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="column is-one-third">
+      <div class="box" style="background-color: #2a2a2a; border-radius: 8px; padding: 20px;">
+        <h2 class="title is-4" style="color: #ffffff;">Location</h2>
+        <div id="map" style="height: 300px; width: 100%; background-color: #3a3a3a;">
+          <iframe width="100%" height="100%" style="border:0; " loading="lazy" allowfullscreen src="https://www.google.com/maps/embed/v1/view?zoom=11&center=33.7488%2C-84.3877&key=AIzaSyB8y_QBXEuxLZUo4xlKs9mKb622hwlOJMw"></iframe>
+          <!--<p class="has-text-centered" style="padding-top: 140px;">Map will be displayed here</p>-->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" style="padding-top: 2rem;">
+    <h2 class="title is-3" style="color: #ffffff;">Reviews</h2>
+    <div class="columns is-multiline">
+      {% for review in reviews %}
+        <div class="column is-one-third">
+          <div class="card" style="background-color: #2a2a2a; color: #ffffff; border-radius: 8px;">
+            <div class="card-content">
+              <p class="title is-4" style="color: #ffd700;">{{ review.rating }} / 5</p>
+              <p class="subtitle is-6" style="color: #bbbbbb;">{{ review.user.username }} - {{ review.created_at|date:"F d, Y" }}</p>
+              <div class="content">
+                {{ review.text }}
+              </div>
+            </div>
+          </div>
+        </div>
+      {% empty %}
+        <p>No reviews yet. Be the first to review!</p>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="section" style="padding-top: 2rem;">
+    <h2 class="title is-3" style="color: #ffffff;">Leave a Review</h2>
+    <form method="post">
+      {% csrf_token %}
+      <div class="field">
+        <label class="label" style="color: #ffffff;">Rating</label>
+        <div class="control">
+          <div class="select">
+            <select name="rating" style="background-color: #2a2a2a; color: #ffffff; border-color: #4a4a4a;">
+              <option value="1">1 Star</option>
+              <option value="2">2 Stars</option>
+              <option value="3">3 Stars</option>
+              <option value="4">4 Stars</option>
+              <option value="5">5 Stars</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="label" style="color: #ffffff;">Your Review</label>
+        <div class="control">
+          <textarea class="textarea" name="text" placeholder="Write your review here" style="background-color: #2a2a2a; color: #ffffff; border-color: #4a4a4a;"></textarea>
+        </div>
+      </div>
+      <div class="field">
+        <div class="control">
+          <button class="button is-primary" type="submit" style="background-color: #4caf50; border-color: transparent;">Submit Review</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
