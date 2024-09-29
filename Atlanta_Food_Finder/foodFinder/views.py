@@ -9,13 +9,20 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.contrib import messages
 from .models import *
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
 
 
 def home(request):
     if not request.user.is_authenticated:
         return redirect('/foodFinder/login/')
     else:
-        return render(request, "foodFinder/home.html", context=None)
+        context = {
+            'apiKey': os.getenv('GMAPS_API_KEY'),
+        }
+        return render(request, "foodFinder/home.html", context)
 
 
 def register(request):

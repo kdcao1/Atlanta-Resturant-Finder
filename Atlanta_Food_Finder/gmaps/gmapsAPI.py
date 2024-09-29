@@ -1,20 +1,20 @@
 from flask import Flask, request, jsonify # pip install Flask
 import googlemaps # pip install googlemaps
 from flask_cors import CORS # pip install flask_cors
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 # Libraries for synchronized launch
 import os
 import webbrowser
 import threading
 import subprocess
-
-
 app = Flask(__name__)
 CORS(app)
 
 # Initialize the Google Maps client
-API_KEY = 'AIzaSyB8y_QBXEuxLZUo4xlKs9mKb622hwlOJMw'
-gmaps = googlemaps.Client(key=API_KEY)
+gmaps = googlemaps.Client(key=os.getenv('GMAPS_API_KEY'))
 
 # Get coordinates for Atlanta, GA
 atlanta_lat_lng = (33.7490, -84.3880)
