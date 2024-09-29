@@ -83,7 +83,7 @@ def open_browser():
 def run_django_server():
 
     # BEFORE RUNNING, REMEMBER TO CHANGE THE PATH TO THE DIRECTORY WHERE manage.py IS LOCATED LOCALLY
-    manage_py_dir = '../manage.py'
+    manage_py_dir = '../'
     print(manage_py_dir)
     
     # Run manage.py runserver using subprocess
