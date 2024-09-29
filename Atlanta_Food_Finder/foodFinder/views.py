@@ -1,5 +1,3 @@
-from lib2to3.fixes.fix_input import context
-
 from django.shortcuts import render, redirect
 from .models import Guest
 from .forms import ProfileForm
@@ -7,7 +5,19 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
-import base64
+from django.http import JsonResponse
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.contrib.auth.tokens import default_token_generator
+from django.template.loader import render_to_string
+from django.conf import settings
+from django.utils.crypto import get_random_string
+from django.contrib.auth.tokens import default_token_generator
+from django.shortcuts import get_object_or_404
+from .models import PasswordResetToken  # Import the new model
+
 
 
 def home(request):
@@ -45,8 +55,6 @@ def register(request):
     return render(request, 'foodFinder/register.html')
 
 
-
-
 def logins(request):
     login_error = False
     if request.method == "POST":
@@ -75,10 +83,6 @@ def favorites(request):
     return render(request, "foodFinder/favorites.html", context=None)
 
 
-def settings(request):
-    return render(request, "foodFinder/settings.html", context=None)
-
-
 @login_required
 def settings(request):
     guest = Guest.objects.get(user=request.user)
@@ -86,21 +90,17 @@ def settings(request):
     if request.method == "POST":
         form = ProfileForm(request.POST, request.FILES, instance=guest)
 
-        # Handle the cropped image data if provided
         cropped_image_data = request.POST.get('cropped_image_data', None)
 
         if form.is_valid():
             if cropped_image_data:
-                # Logic to handle the cropped image
                 from django.core.files.base import ContentFile
                 import base64
 
-                # Decode the cropped image data
                 format, imgstr = cropped_image_data.split(';base64,')
                 ext = format.split('/')[-1]
                 data = ContentFile(base64.b64decode(imgstr), name=f'{guest.user.username}_profile.{ext}')
 
-                # Save the cropped image to the guest profile
                 guest.profile_picture = data
                 guest.save()
 
@@ -111,6 +111,69 @@ def settings(request):
 
     context = {
         'form': form,
-        'guest': guest,  # Include guest to show current profile picture
+        'guest': guest,
     }
     return render(request, 'foodFinder/settings.html', context)
+
+def save_cropped_image(request):
+    if request.method == 'POST':
+        cropped_image = request.FILES.get('cropped_image')
+        if cropped_image:
+            guest = request.user.guest
+            guest.profile_picture = cropped_image
+            guest.save()
+            return JsonResponse({'message': 'Image successfully uploaded'}, status=200)
+
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
+def request_password_reset(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        try:
+            user = User.objects.get(email=email)
+
+            # Generate a unique token
+            token = get_random_string(20)
+            PasswordResetToken.objects.create(user=user, token=token)  # Save the token to the database
+
+            reset_link = f'http://yourdomain.com/reset-password/{token}/'
+
+            # Send email
+            send_mail(
+                'Password Reset Request',
+                f'Click the link to reset your password: {reset_link}',
+                'your_email@example.com',
+                [user.email],
+                fail_silently=False,
+            )
+            messages.success(request, 'Password reset email has been sent.')
+        except User.DoesNotExist:
+            messages.error(request, 'Email not associated with any user.')
+
+    return render(request, 'foodFinder/request_password_reset.html')
+
+def reset_password(request, token):
+    try:
+        token_obj = PasswordResetToken.objects.get(token=token)
+
+        if token_obj.is_expired():
+            messages.error(request, 'This password reset link has expired.')
+            return redirect('request_password_reset')  # Redirect to the request form
+
+        if request.method == 'POST':
+            password = request.POST.get('password')
+            user = token_obj.user  # Get the associated user
+
+            user.set_password(password)
+            user.save()
+
+            # Optionally, delete the token after successful use
+            token_obj.delete()
+
+            messages.success(request, 'Your password has been reset successfully!')
+            return redirect('login')  # Redirect to login page after resetting
+
+    except PasswordResetToken.DoesNotExist:
+        messages.error(request, 'Invalid token.')
+
+    return render(request, 'foodFinder/reset_password.html', {'token': token})
