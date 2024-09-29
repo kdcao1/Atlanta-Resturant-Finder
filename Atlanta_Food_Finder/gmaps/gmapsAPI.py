@@ -2,6 +2,11 @@ from flask import Flask, request, jsonify # pip install Flask
 import googlemaps # pip install googlemaps
 from flask_cors import CORS # pip install flask_cors
 
+import os
+import webbrowser
+import threading
+
+
 app = Flask(__name__)
 CORS(app)
 
@@ -69,6 +74,8 @@ def search():
     return jsonify({'places': places})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=443, debug=True)
-
-# To access server after running and loading the pulls, go to http://127.0.0.1:5000/initial
+    # Only open the browser if not in reloader mode
+    if not os.environ.get("WERKZEUG_RUN_MAIN"):
+        threading.Timer(1.25, lambda: webbrowser.open('http://127.0.0.1:5000/initial')).start()
+    
+    app.run(host='0.0.0.0', port=5000, debug=True)
