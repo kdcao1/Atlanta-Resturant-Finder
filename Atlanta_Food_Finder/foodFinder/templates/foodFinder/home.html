@@ -85,7 +85,7 @@
 
 // Function to fetch initial data from Flask server
 function fetchInitialData() {
-    fetch('http://127.0.0.1:5000/initial')
+    fetch('http://127.0.0.1:443/initial')
         .then(response => response.json())
         .then(data => {
             displayRestaurants(data.places);
@@ -95,7 +95,7 @@ function fetchInitialData() {
 
 // Function to search for restaurants based on user input
 function searchRestaurants(keyword) {
-    fetch('http://127.0.0.1:5000/search', {
+    fetch('http://127.0.0.1:443/search', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
