@@ -67,17 +67,15 @@
                     <div id="restaurant-cards" class='card-container' style="scrollbar-width: none;"></div>
                 </div>
                 <div class='column is-half'>
-                    <iframe width="100%" style="border:0; height: 80vh;" loading="lazy" allowfullscreen src="https://www.google.com/maps/embed/v1/view?zoom=11&center=33.7488%2C-84.3877&key=AIzaSyB8y_QBXEuxLZUo4xlKs9mKb622hwlOJMw"></iframe>
+                    <iframe width="100%" style="border:0; height: 85vh; margin-top: 5%" loading="lazy" allowfullscreen src="https://www.google.com/maps/embed/v1/view?zoom=11&center=33.7488%2C-84.3877&key=AIzaSyB8y_QBXEuxLZUo4xlKs9mKb622hwlOJMw"></iframe>
                 </div>
             </div>
         </div>
     </div>
     <div class="hero-foot">
         <footer class="footer">
-            <div class="content has-text-centered">
-                <p>
+            <div class="has-text-centered">
                     <strong>Atlanta Food Finder</strong> by <a href="/">Team 55</a>.
-                </p>
             </div>
         </footer>
     </div>
@@ -116,7 +114,7 @@ function displayRestaurants(places) {
     const container = document.getElementById('restaurant-cards');
     container.className = 'mt-2'
     container.innerHTML = ''; // Clear existing content
-    container.style.height = 'calc(85vh - 100px)'; // Set the height
+    container.style.height = 'calc(85vh - 30px)'; // Set the height
     container.style.overflowY = 'scroll'; // Allow vertical scrolling
     places.forEach(place => {
         const card = document.createElement('div');
