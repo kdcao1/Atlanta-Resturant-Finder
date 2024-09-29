@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify # pip install Flask
 import googlemaps # pip install googlemaps
 from flask_cors import CORS # pip install flask_cors
 
+# Libraries for synchronized launch
 import os
 import webbrowser
 import threading
