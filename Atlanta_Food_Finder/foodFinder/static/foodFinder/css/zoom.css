@@ -1,0 +1,15 @@
+/* Container styles */
+.image-container {
+    position: relative;
+    width: 128px; /* Define the width you want for the container */
+    height: 128px; /* Define the height you want for the container */
+    overflow: hidden; /* Ensure that the image doesn't overflow */
+}
+
+/* Profile image styles */
+#profileImagePreview {
+    max-width: 100%;
+    transition: transform 0.3s ease;
+    object-fit: cover; /* Ensure the image is properly cropped to fit the container */
+    display: block; /* Make sure the image is not inline-block */
+}

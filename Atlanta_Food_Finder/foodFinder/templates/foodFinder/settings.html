@@ -6,6 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Atlanta Food Finder</title>
     <link rel="stylesheet" href="{% static "./foodFinder/css/bulma.css" %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css"/>
+    <style>
+        /* Custom styles for shorter input fields */
+        .short-input {
+            width: 300px; /* Adjust width as necessary */
+        }
+    </style>
 </head>
 <body>
 <nav class="navbar is-fixed-top" role="navigation" aria-label="main navigation">
@@ -24,28 +31,182 @@
             <a class="navbar-item" href="/foodFinder/favorites">
                 Favorites
             </a>
-
+        </div>
+        <div class="navbar-end">
+            {% if user.is_authenticated %}
+                <figure class="image is-64x64 pt-2 pr-3">
+                    <a href="{% url 'settings' %}">
+                        <img class="is-rounded is-square"
+                             src="{% if user.guest.profile_picture %}{{ user.guest.profile_picture.url }}{% else %}{% static 'images/default_profile.png' %}{% endif %}"
+                             alt="Profile Picture"/>
+                    </a>
+                </figure>
+            {% else %}
+                <figure class="image is-64x64 pt-2 pr-3">
+                    <a href="{% url 'settings' %}">
+                        <img class="is-rounded is-square"
+                             src="{% static 'images/default_profile.png' %}"
+                             alt="Guest Profile Picture"/>
+                    </a>
+                </figure>
+            {% endif %}
         </div>
     </div>
 </nav>
 
 <section class="section mt-3">
     <div class="container">
-        <h1 class="title">
-            Settings
-        </h1>
-        <p class="subtitle">
-            Settings page
-        </p>
-
+        <h1 class="title">Settings</h1>
         <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
-            {{ form.as_p }}
-            <button class="button is-primary" type="submit">Save Changes</button>
+            <!-- Profile Picture Upload -->
+            <div class="field">
+                <label class="label">Upload New Profile Picture</label>
+                <input type="file" id="profilePictureInput" name="profile_picture" accept="image/*" class="input" disabled>
+            </div>
+
+            <!-- Crop & Adjust Profile Picture -->
+            <div class="field">
+                <label class="label">Crop & Adjust Profile Picture</label>
+                <figure class="image is-128x128">
+                    <img id="profileImagePreview"
+                         src="{% if guest.profile_picture %}{{ guest.profile_picture.url }}{% else %}{% static 'images/default_profile.png' %}{% endif %}"
+                         alt="Profile Picture">
+                </figure>
+                <input type="hidden" name="cropped_image_data" id="croppedImageData">
+            </div>
+
+            <!-- Show buttons only in Edit Mode -->
+            <div id="cropButtons" style="display: none;">
+                <button type="button" id="cropSaveButton" class="button is-success">Save Cropped Photo</button>
+                <button type="button" id="resetButton" class="button is-warning">Reset to Original</button>
+            </div>
+
+            <!-- Additional Settings -->
+            <div class="field mt-5">
+                <label class="label">Username</label>
+                <input type="text" name="username" class="input short-input" value="{{ guest.username }}" placeholder="Enter your username" disabled>
+            </div>
+
+            <div class="field mt-5">
+                <label class="label">Email</label>
+                <input type="email" name="email" class="input short-input" value="{{ guest.email }}" placeholder="Enter your email" disabled>
+            </div>
+
+            <div class="field mt-5">
+                <label class="label">Location</label>
+                <input type="text" name="location" class="input short-input" value="{{ guest.location }}" placeholder="Enter your location" disabled>
+            </div>
+
+            <div class="field mt-5">
+                <label class="label">Bio</label>
+                <textarea name="bio" class="textarea" placeholder="Tell us about yourself..." disabled>{{ guest.bio }}</textarea>
+            </div>
+
+            <div class="field mt-5">
+                <label class="label">Change Password</label>
+                <button type="button" class="button is-warning" onclick="location.href='{% url 'password_reset' %}'">Change Password</button>
+            </div>
+
+            <!-- Move Edit and Save buttons to the bottom -->
+            <button type="button" id="editButton" class="button is-info">Edit</button>
+            <button type="button" id="cancelButton" class="button is-danger" style="display: none;">Cancel</button>
+            <button class="button is-primary" type="submit" style="display: none;">Save Changes</button>
         </form>
     </div>
 </section>
 
+<!-- cropper.js scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+<script>
+    const profileImagePreview = document.getElementById('profileImagePreview');
+    const profilePictureInput = document.getElementById('profilePictureInput');
+    const croppedImageData = document.getElementById('croppedImageData');
+    const resetButton = document.getElementById('resetButton');
+    const editButton = document.getElementById('editButton');
+    const cancelButton = document.getElementById('cancelButton');
+    const saveButton = document.querySelector('button[type="submit"]');
+    const cropSaveButton = document.getElementById('cropSaveButton');
+    const cropButtons = document.getElementById('cropButtons');
+    let cropper;
+    let originalImageSrc = profileImagePreview.src; // Store original image source
+
+    // Initialize Cropper.js when the page loads
+    window.onload = function () {
+        cropper = new Cropper(profileImagePreview, {
+            aspectRatio: 1, // Square crop
+            viewMode: 1, // Restrict the image within the crop box
+            scalable: true, // Allow image scaling
+            zoomable: true, // Allow zooming
+        });
+    };
+
+    // Edit button click event
+    editButton.addEventListener('click', function () {
+        profilePictureInput.disabled = false;
+        cropButtons.style.display = 'block'; // Show crop buttons
+        editButton.style.display = 'none';
+        cancelButton.style.display = 'inline';
+        saveButton.style.display = 'inline';
+        document.querySelectorAll('input, textarea').forEach(element => {
+            element.disabled = false; // Enable all inputs
+        });
+    });
+
+    // Cancel button click event
+    cancelButton.addEventListener('click', function () {
+        // Revert to original image
+        profileImagePreview.src = originalImageSrc;
+        cropper.replace(originalImageSrc);
+        profilePictureInput.disabled = true;
+        cropButtons.style.display = 'none'; // Hide crop buttons
+        editButton.style.display = 'inline';
+        cancelButton.style.display = 'none';
+        saveButton.style.display = 'none';
+        document.querySelectorAll('input, textarea').forEach(element => {
+            element.disabled = true; // Disable all inputs
+        });
+    });
+
+    // Save cropped photo temporarily
+    cropSaveButton.addEventListener('click', function() {
+        const croppedCanvas = cropper.getCroppedCanvas({
+            width: 128,
+            height: 128,
+        });
+        const croppedImage = croppedCanvas.toDataURL('image/png');
+        croppedImageData.value = croppedImage; // Store temporarily
+    });
+
+    // Update image preview and replace the cropper image on file selection
+    profilePictureInput.addEventListener('change', function (event) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            profileImagePreview.src = e.target.result; // Update image preview
+            if (cropper) {
+                cropper.replace(e.target.result); // Replace the image in the cropper
+            }
+        };
+        reader.readAsDataURL(event.target.files[0]);
+    });
+
+    // Handle Reset button click
+    resetButton.addEventListener('click', function() {
+        profileImagePreview.src = originalImageSrc; // Reset to the original image
+        cropper.replace(originalImageSrc); // Reset the cropper with the original image
+    });
+
+    // Before form submission, convert cropped image to base64 and set hidden input value
+    document.querySelector('form').addEventListener('submit', function (event) {
+        if (cropper) {
+            const croppedCanvas = cropper.getCroppedCanvas({
+                width: 128, // Output size
+                height: 128,
+            });
+            croppedImageData.value = croppedCanvas.toDataURL('image/png'); // Convert to base64 and set hidden input value
+        }
+    });
+</script>
 
 </body>
 </html>
