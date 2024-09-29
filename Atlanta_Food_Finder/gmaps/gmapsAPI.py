@@ -75,11 +75,12 @@ def search():
     # Return the new results
     return jsonify({'places': places})
 
+# Function to open the browser
 def open_browser():
     webbrowser.open('http://127.0.0.1:5000/initial')
 
+# Path to manage.py directory
 def run_django_server():
-    # Path to manage.py directory
     manage_py_dir = r'C:\Users\Brian\Desktop\CompSci\CS2340\Atlanta-Resturant-Finder\Atlanta_Food_Finder'
     
     # Run manage.py runserver using subprocess
