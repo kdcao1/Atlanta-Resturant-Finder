@@ -38,6 +38,7 @@ def get_places(lat_lng, radius=5000, keyword=None, open_now=None, price_level=No
         if rating_threshold and place.get('rating') < float(rating_threshold):
             continue
         filtered_places.append({
+            'id': place.get('place_id'),
             'name': place['name'],
             'address': place.get('vicinity'),
             'price_level': place.get('price_level', 'N/A'),

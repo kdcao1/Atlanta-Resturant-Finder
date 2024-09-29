@@ -1,8 +1,11 @@
+from lib2to3.fixes.fix_input import context
+
 from django.shortcuts import render, redirect
-from .models import Guest
+from .models import Guest, Restaurant
 from .forms import ProfileForm
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.contrib import messages
 from .models import *
@@ -21,8 +24,6 @@ from django.utils.crypto import get_random_string
 from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import get_object_or_404
 
-
-
 def home(request):
     if not request.user.is_authenticated:
         return redirect('/foodFinder/login/')
@@ -31,7 +32,6 @@ def home(request):
             'apiKey': os.getenv('GMAPS_API_KEY'),
         }
         return render(request, "foodFinder/home.html", context)
-
 
 def register(request):
     if request.method == 'POST':
@@ -83,7 +83,6 @@ def logins(request):
         "login_error": login_error
     }
     return render(request, "foodFinder/login.html", context)
-
 
 def favorites(request):
     return render(request, "foodFinder/favorites.html", context=None)
@@ -189,3 +188,11 @@ def reset_password(request, token):
         messages.error(request, 'Invalid token.')
 
     return render(request, 'foodFinder/reset_password.html', {'token': token})
+
+def place_detail(request, place_id):
+    place = get_object_or_404(Restaurant, id=place_id)
+    reviews = place.reviews.all()  # Assuming there's a relationship to reviews
+    return render(request, 'restaurant_detail.html', {
+        'restaurant': place,
+        'reviews': reviews,
+    })
