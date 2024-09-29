@@ -5,6 +5,7 @@ from flask_cors import CORS # pip install flask_cors
 import os
 import webbrowser
 import threading
+import subprocess
 
 
 app = Flask(__name__)
@@ -73,9 +74,20 @@ def search():
     # Return the new results
     return jsonify({'places': places})
 
+def open_browser():
+    webbrowser.open('http://127.0.0.1:5000/initial')
+
+def run_django_server():
+    # Path to manage.py directory
+    manage_py_dir = r'C:\Users\Brian\Desktop\CompSci\CS2340\Atlanta-Resturant-Finder\Atlanta_Food_Finder'
+    
+    # Run manage.py runserver using subprocess
+    subprocess.run(['python', 'manage.py', 'runserver'], cwd=manage_py_dir, check=True)
+
 if __name__ == '__main__':
-    # Only open the browser if not in reloader mode
+    # Only open the browser if not in reloader mode to not make it run twice
     if not os.environ.get("WERKZEUG_RUN_MAIN"):
-        threading.Timer(1.25, lambda: webbrowser.open('http://127.0.0.1:5000/initial')).start()
+        threading.Timer(1.25, open_browser).start()
+        threading.Timer(1.5, run_django_server).start()  # Run Django server slightly after opening the browser
     
     app.run(host='0.0.0.0', port=5000, debug=True)
