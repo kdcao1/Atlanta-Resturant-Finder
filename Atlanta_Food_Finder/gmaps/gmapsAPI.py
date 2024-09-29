@@ -81,6 +81,8 @@ def open_browser():
 
 # Path to manage.py directory
 def run_django_server():
+
+    # BEFPORE RUNNING, REMEMBER TO CHANGE THE PATH TO THE DIRECTORY WHERE manage.py IS LOCATED LOCALLY
     manage_py_dir = r'C:\Users\Brian\Desktop\CompSci\CS2340\Atlanta-Resturant-Finder\Atlanta_Food_Finder'
     
     # Run manage.py runserver using subprocess
