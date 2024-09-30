@@ -1,7 +1,8 @@
 from flask import Flask, request, jsonify # pip install Flask
-import googlemaps # pip install googlemaps
-from flask_cors import CORS # pip install flask_cors
+import googlemaps  # pip install googlemaps
+from flask_cors import CORS  # pip install flask_cors
 from dotenv import load_dotenv
+import math
 load_dotenv()
 
 # Libraries for synchronized launch
@@ -12,7 +13,7 @@ import subprocess
 app = Flask(__name__)
 CORS(app)
 
-import math
+
 
 def calculate_distance(lat1, lon1, lat2, lon2):
     lat1, lon1, lat2, lon2 = map(math.radians, [lat1, lon1, lat2, lon2])
@@ -23,11 +24,13 @@ def calculate_distance(lat1, lon1, lat2, lon2):
     km = 6371 * c
     return km
 
+
 # Initialize the Google Maps client
 gmaps = googlemaps.Client(key=os.getenv('GMAPS_API_KEY'))
 
 # Get coordinates for Atlanta, GA
 atlanta_lat_lng = (33.7490, -84.3880)
+
 
 def get_place_details(place_id):
     # Request place details from the Google Maps API
@@ -40,6 +43,7 @@ def get_place_details(place_id):
         'serves_wine', 'takeout', 'user_ratings_total'
     ])
     return details_result.get('result', {})
+
 
 # Function to get places from Google Maps API
 def get_places(lat_lng, radius=5000, keyword=None, open_now=None, price_level=None, rating_threshold=None):
@@ -99,11 +103,13 @@ def get_places(lat_lng, radius=5000, keyword=None, open_now=None, price_level=No
     # Return the filtered list (limit to 20 results)
     return filtered_places[:20]
 
+
 # Route to get the initial 20 locations
 @app.route('/initial', methods=['GET'])
 def initial_load():
     places = get_places(atlanta_lat_lng)
     return jsonify({'places': places})
+
 
 # Route to get the updated 20 locations based on user preferences
 @app.route('/search', methods=['POST'])
@@ -121,15 +127,17 @@ def search():
     # Return the new results
     return jsonify({'places': places})
 
+
 # Function to open the browser
 def open_browser():
-    webbrowser.open('http://127.0.0.1:443/initial')
+    webbrowser.open('http://127.0.0.1:5000/initial')
+
 
 # Path to manage.py directory
 def run_django_server():
 
     # BEFORE RUNNING, REMEMBER TO CHANGE THE PATH TO THE DIRECTORY WHERE manage.py IS LOCATED LOCALLY
-    manage_py_dir = r'C:\Users\Brian\Desktop\CompSci\CS2340\Atlanta-Resturant-Finder\Atlanta_Food_Finder'
+    manage_py_dir = r'C:\Users\grant_polazzo\Desktop\CS\2340\Atlanta-Restaurant-Finder\Atlanta_Food_Finder'
     
     # Run manage.py runserver using subprocess
     subprocess.run(['python3', 'manage.py', 'runserver'], cwd=manage_py_dir, check=True)
