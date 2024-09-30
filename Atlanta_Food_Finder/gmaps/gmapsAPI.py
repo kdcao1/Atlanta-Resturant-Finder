@@ -75,6 +75,11 @@ def get_places(lat_lng, radius=5000, keyword=None, open_now=None, price_level=No
                 'takeout': details.get('takeout', False),
                 'user_ratings_total': details.get('user_ratings_total', 0)
             })
+            
+    # Test print to verify that the restaurants are being fetched correctly
+    print("Fetched Restaurants:")
+    for place in filtered_places:
+        print(place['name'])
 
     # Return the filtered list (limit to 20 results)
     return filtered_places[:20]
