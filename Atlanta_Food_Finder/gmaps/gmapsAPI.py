@@ -19,6 +19,18 @@ gmaps = googlemaps.Client(key=os.getenv('GMAPS_API_KEY'))
 # Get coordinates for Atlanta, GA
 atlanta_lat_lng = (33.7490, -84.3880)
 
+def get_place_details(place_id):
+    # Request place details from the Google Maps API
+    details_result = gmaps.place(place_id=place_id, fields=[
+        'formatted_phone_number', 'website', 'opening_hours', 'delivery', 
+        'wheelchair_accessible_entrance', 'curbside_pickup', 'dine_in',
+        'editorial_summary', 'price_level', 'rating', 'reservable',
+        'reviews', 'serves_beer', 'serves_breakfast', 'serves_brunch',
+        'serves_dinner', 'serves_lunch', 'serves_vegetarian_food',
+        'serves_wine', 'takeout', 'user_ratings_total'
+    ])
+    return details_result.get('result', {})
+
 # Function to get places from Google Maps API
 def get_places(lat_lng, radius=5000, keyword=None, open_now=None, price_level=None, rating_threshold=None):
     # Call the Google Maps API
@@ -33,18 +45,37 @@ def get_places(lat_lng, radius=5000, keyword=None, open_now=None, price_level=No
     # Filter by price level and rating, if provided
     filtered_places = []
     for place in places_result['results']:
-        if price_level and place.get('price_level') != int(price_level):
-            continue
-        if rating_threshold and place.get('rating') < float(rating_threshold):
-            continue
-        filtered_places.append({
-            'id': place.get('place_id'),
-            'name': place['name'],
-            'address': place.get('vicinity'),
-            'price_level': place.get('price_level', 'N/A'),
-            'rating': place.get('rating', 'N/A'),
-            'status': place.get('opening_hours'),
-        })
+        place_id = place.get('place_id')
+        if place_id:
+            details = get_place_details(place_id)
+            filtered_places.append({
+                'name': place['name'],
+                'address': place.get('vicinity'),
+                'price_level': place.get('price_level', 'N/A'),
+                'rating': place.get('rating', 'N/A'),
+                'phone_number': details.get('formatted_phone_number', 'N/A'),
+                'website': details.get('website', 'N/A'),
+                'opening_hours': details.get('opening_hours', {}).get('weekday_text', []),
+                'curbside_pickup': details.get('curbside_pickup', False),
+                'delivery': details.get('delivery', False),
+                'dine_in': details.get('dine_in', False),
+                'editorial_summary': details.get('editorial_summary', {}).get('overview', ''),
+                'reservable': details.get('reservable', False),
+                'reviews': details.get('reviews', []),
+                'serves_beer': details.get('serves_beer', False),
+                'serves_breakfast': details.get('serves_breakfast', False),
+                'serves_brunch': details.get('serves_brunch', False),
+                'serves_dinner': details.get('serves_dinner', False),
+                'serves_lunch': details.get('serves_lunch', False),
+                'serves_vegetarian_food': details.get('serves_vegetarian_food', False),
+                'serves_wine': details.get('serves_wine', False),
+                'takeout': details.get('takeout', False),
+                'user_ratings_total': details.get('user_ratings_total', 0)
+            })
+
+    print("Fetched Restaurants:")
+    for place in filtered_places:
+        print(place['name'])
 
     # Test print to verify that the restaurants are being fetched correctly
     print("Fetched Restaurants:")
@@ -84,7 +115,7 @@ def open_browser():
 def run_django_server():
 
     # BEFORE RUNNING, REMEMBER TO CHANGE THE PATH TO THE DIRECTORY WHERE manage.py IS LOCATED LOCALLY
-    manage_py_dir = '../'
+    manage_py_dir = r'C:\Users\Brian\Desktop\CompSci\CS2340\Atlanta-Resturant-Finder\Atlanta_Food_Finder'
     print(manage_py_dir)
     
     # Run manage.py runserver using subprocess
