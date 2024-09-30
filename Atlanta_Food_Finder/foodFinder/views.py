@@ -1,18 +1,17 @@
 from django.shortcuts import render, redirect
 from django.views.decorators.http import require_POST
-
 from .forms import ProfileForm
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import *
-import os
-from dotenv import load_dotenv
-load_dotenv()
 from django.http import JsonResponse
 from django.core.mail import send_mail
 from django.utils.crypto import get_random_string
 from django.shortcuts import get_object_or_404
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 
 def home(request):

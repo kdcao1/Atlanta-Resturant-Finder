@@ -61,14 +61,23 @@
                         <div>
                             <button id="searchButton" class="button is-primary is-normal">Search</button>
                             <button id="searchButton" class="button is-primary is-normal">Filter</button>
-                            <button id="searchButton" class="button is-primary is-normal">Sort</button>
+                            <div class="select is-primary">
+                                <select id="sortOptions">
+                                    <option value="">Sort By</option>
+                                    <option value="ratingHigh">Rating: High to Low</option>
+                                    <option value="ratingLow">Rating: Low to High</option>
+                                    <option value="distanceNear">Distance: Nearest First</option>
+                                    <option value="distanceFar">Distance: Farthest First</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                     <!-- Add a container for restaurant cards -->
                     <div id="restaurant-cards" class='card-container' style="scrollbar-width: none;"></div>
                 </div>
                 <div class='column is-half'>
-                    <iframe width="100%" style="border:0; height: 85vh; margin-top: 5%" loading="lazy" allowfullscreen src="https://www.google.com/maps/embed/v1/view?zoom=11&center=33.7488%2C-84.3877&key={{ apiKey }}"></iframe>
+                    <gmp-map style="height:85vh; width:100%; margin-top: 5%" map-id="1c12e499c0237ede" center="33.77166857721202, -84.38930836441801" zoom="16">
+                    </gmp-map>
                 </div>
             </div>
         </div>
@@ -76,17 +85,20 @@
     <div class="hero-foot">
         <footer class="footer">
             <div class="has-text-centered">
-                    <strong>Atlanta Food Finder</strong> by <a href="/">Team 55</a>.
+                <strong>Atlanta Food Finder</strong> by <a href="/">Team 55</a>.
             </div>
         </footer>
     </div>
 </section>
 
+<script
+        src="https://maps.googleapis.com/maps/api/js?key={{ apiKey }}&loading=async&libraries=maps,marker&v=beta" defer>
+</script>
 <script>
 
 // Function to fetch initial data from Flask server
 function fetchInitialData() {
-    fetch('http://127.0.0.1:5000/initial')
+    fetch('http://127.0.0.1:443/initial')
         .then(response => response.json())
         .then(data => {
             displayRestaurants(data.places);
@@ -96,7 +108,7 @@ function fetchInitialData() {
 
 // Function to search for restaurants based on user input
 function searchRestaurants(keyword) {
-    fetch('http://127.0.0.1:5000/search', {
+    fetch('http://127.0.0.1:443/search', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -110,6 +122,41 @@ function searchRestaurants(keyword) {
     .catch(error => console.error('Error searching for restaurants:', error));
 }
 
+function sortRestaurants(places, criterion) {
+    switch (criterion) {
+        case 'ratingHigh':
+            return places.sort((a, b) => b.rating - a.rating);
+        case 'ratingLow':
+            return places.sort((a, b) => a.rating - b.rating);
+        case 'distanceNear':
+            return places.sort((a, b) => a.distance - b.distance);
+        case 'distanceFar':
+            return places.sort((a, b) => b.distance - a.distance);
+        default:
+            return places;
+    }
+}
+
+function openModal($el) {
+    $el.classList.add('is-active');
+}
+
+function closeModal($el) {
+    $el.classList.remove('is-active');
+}
+
+function closeAllModals() {
+    (document.querySelectorAll('.modal') || []).forEach(($modal) => {
+        closeModal($modal);
+    });
+}
+
+document.addEventListener('keydown', (event) => {
+    if(event.key === "Escape") {
+        closeAllModals();
+    }
+});
+
 // Function to display restaurants as cards
 function displayRestaurants(places) {
     const container = document.getElementById('restaurant-cards');
@@ -117,6 +164,11 @@ function displayRestaurants(places) {
     container.innerHTML = ''; // Clear existing content
     container.style.height = 'calc(85vh - 30px)'; // Set the height
     container.style.overflowY = 'scroll'; // Allow vertical scrolling
+
+    const sortOption = document.getElementById('sortOptions').value;
+
+    const sortedPlaces = sortRestaurants(places, sortOption);
+
     places.forEach(place => {
         const card = document.createElement('div');
         card.className = 'card mx-2';
@@ -142,89 +194,76 @@ function displayRestaurants(places) {
                 return "Closed"; // If false, return "Closed"
             }
         }
+
         card.innerHTML = `
             <div class='card-content is-flex is-flex-direction-row is-justify-content-space-between mx-2'>
                 <div class='is-size-2'>
                     ${place.name}
+                    <p class="is-size-6">${place.editorial_summary}</p>
                     <div class="is-size-5">${createStarRating(place.rating)} ${createPriceRating(place.price_level)} ${checkOpenStatus(place)}</div>
                     <p class="is-size-6">${place.address}</p>
                 </div>
                 <div class='is-size-2'>
-                    <button class="favorite-button" data-restaurant-id="{{ restaurant.id }}">
-                        <span class="heart-icon">
-                            &#9825; <!-- Hollow heart -->
-                        </span>
-                    </button>
+                    &#9825; &#9829;
                 </div>
             </div>
             <footer class="card-footer">
-                <a href="" class="card-footer-item">More</a>
+                <button class="card-footer-item" data-target="modal-${place.id}">More</button>
             </footer>
+            <div class="modal" id="modal-${place.id}">
+              <div class="modal-background"></div>
+              <div class="modal-card" style="width: 80vh; height: 80vh;">
+                <header class="modal-card-head">
+                  <p class="modal-card-title">${place.name}</p>
+                  <button class="delete" aria-label="close"></button>
+                </header>
+                <section class="modal-card-body is-flex is-flex-direction-row is-justify-content-space-between">
+                <div class='columns' style="width: 100%;">
+                    <div class="column is-half">
+                          <div class='is-size-2'>
+                            <p class="is-size-6">${place.editorial_summary}</p>
+                            <div class="is-size-5">${createStarRating(place.rating)} ${createPriceRating(place.price_level)} ${checkOpenStatus(place)}</div>
+                            <p class="is-size-6">${place.address}</p>
+                            <p class="is-size-6">${place.phone_number}</p>
+                        </div>
+                    </div>
+                    <div class="column is-half">
+                        <gmp-map style="height:80%; width:100%;" map-id="1c12e499c0237ede" center="${place.coords.location.lat},${place.coords.location.lng}" zoom="18">
+                        </gmp-map>
+                    </div>
+                </div>
+                </section>
+                    <footer class="modal-card-foot">
+                        <a class="button" href="${place.website}">Website</a>
+                    </footer>
+              </div>
+            </div>
         `;
         container.appendChild(card);
     });
 }
 
-// Function to toggle favorite status
-document.addEventListener("DOMContentLoaded", function () {
-    const favoriteButtons = document.querySelectorAll('.favorite-button');
-
-    favoriteButtons.forEach(button => {
-        button.addEventListener('click', function () {
-            const restaurantId = this.getAttribute('data-restaurant-id');
-            const heartIcon = this.querySelector('.heart-icon');
-
-            // Toggle favorite status
-            if (heartIcon.innerHTML === '&#9825;') { // Hollow heart
-                heartIcon.innerHTML = '&#9829;'; // Filled heart
-                addFavorite(restaurantId); // Add to favorites
-            } else {
-                heartIcon.innerHTML = '&#9825;'; // Hollow heart
-                removeFavorite(restaurantId); // Remove from favorites
-            }
-        });
-    });
-
-    function toggleFavorite(restaurantId) {
-        const heartButton = document.getElementById(`favorite-button-${restaurantId}`);
-        const isFavorited = heartButton.classList.toggle('favorited'); // toggles class
-
-        // Change heart icon
-        heartButton.innerHTML = isFavorited ? '&#9829;' : '&#9825;'; // filled or hollow heart
-
-        // Make AJAX call to backend to save/un-save favorite
-        fetch(`/favorite/${restaurantId}/`, {
-            method: isFavorited ? 'POST' : 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': '{{ csrf_token }}', // Use your CSRF token here
-            },
-        })
-            .then(response => {
-                if (!response.ok) throw new Error('Network response was not ok');
-                return response.json();
-            })
-            .then(data => {
-                console.log('Success:', data);
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-            });
-    }
-
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
+document.getElementById('restaurant-cards').addEventListener('click', (event) => {
+    // Check if the clicked element is the one you want
+    if (event.target.classList.contains('card-footer-item')) {
+        const modalId = event.target.dataset.target; // Get the modal ID from the data attribute
+        const $targetModal = document.getElementById(modalId); // Find the modal by ID
+        if ($targetModal) {
+            openModal($targetModal); // Open the modal
         }
-        return cookieValue;
+    }
+});
+
+
+
+document.getElementById('restaurant-cards').addEventListener('click', (event) => {
+    // Check if the clicked element is a close button
+    if (event.target.classList.contains('delete') || event.target.classList.contains('close-modal')) {
+        const $modal = event.target.closest('.modal'); // Find the closest modal element
+
+        if ($modal) {
+            closeModal($modal); // Close the modal
+        }
     }
 });
 
@@ -248,6 +287,12 @@ document.getElementById('searchBar').addEventListener('keydown', function(event)
         }
     }
 });
+
+document.getElementById('sortOptions').addEventListener('change', function() {
+    fetchInitialData(); // Re-fetch and display sorted data when sorting option changes
+});
+
+
 
 // Call function to fetch initial data on page load
 document.addEventListener('DOMContentLoaded', fetchInitialData);
