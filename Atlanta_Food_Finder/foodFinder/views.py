@@ -1,28 +1,19 @@
-from lib2to3.fixes.fix_input import context
-
 from django.shortcuts import render, redirect
-from .models import Guest, Restaurant
+from django.views.decorators.http import require_POST
+
 from .forms import ProfileForm
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.models import User
 from django.contrib import messages
 from .models import *
 import os
 from dotenv import load_dotenv
 load_dotenv()
 from django.http import JsonResponse
-from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
-from django.utils.http import urlsafe_base64_encode
-from django.utils.encoding import force_bytes
-from django.contrib.auth.tokens import default_token_generator
-from django.template.loader import render_to_string
-from django.conf import settings
 from django.utils.crypto import get_random_string
-from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import get_object_or_404
+
 
 def home(request):
     if not request.user.is_authenticated:
@@ -32,6 +23,7 @@ def home(request):
             'apiKey': os.getenv('GMAPS_API_KEY'),
         }
         return render(request, "foodFinder/home.html", context)
+
 
 def register(request):
     if request.method == 'POST':
@@ -84,9 +76,27 @@ def logins(request):
     }
     return render(request, "foodFinder/login.html", context)
 
-def favorites(request):
-    return render(request, "foodFinder/favorites.html", context=None)
 
+def favorites(request):
+    favorite_restaurants = request.user.guest.favorite_restaurants.all() if request.user.is_authenticated else []
+    context = {
+        'favorite_restaurants': favorite_restaurants,
+    }
+    return render(request, "foodFinder/favorites.html", context)
+
+
+@require_POST
+def favorite_restaurant(request, restaurant_id):
+    if request.user.is_authenticated:
+        restaurant = get_object_or_404(Restaurant, id=restaurant_id)
+        if restaurant in request.user.guest.favorite_restaurants.all():
+            request.user.guest.favorite_restaurants.remove(restaurant)
+            is_favorited = False
+        else:
+            request.user.guest.favorite_restaurants.add(restaurant)
+            is_favorited = True
+        return JsonResponse({'is_favorited': is_favorited})
+    return JsonResponse({'error': 'User not authenticated'}, status=403)
 
 @login_required
 def settings(request):

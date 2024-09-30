@@ -86,7 +86,7 @@
 
 // Function to fetch initial data from Flask server
 function fetchInitialData() {
-    fetch('http://127.0.0.1:443/initial')
+    fetch('http://127.0.0.1:5000/initial')
         .then(response => response.json())
         .then(data => {
             displayRestaurants(data.places);
@@ -96,7 +96,7 @@ function fetchInitialData() {
 
 // Function to search for restaurants based on user input
 function searchRestaurants(keyword) {
-    fetch('http://127.0.0.1:443/search', {
+    fetch('http://127.0.0.1:5000/search', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -149,7 +149,13 @@ function displayRestaurants(places) {
                     <div class="is-size-5">${createStarRating(place.rating)} ${createPriceRating(place.price_level)} ${checkOpenStatus(place)}</div>
                     <p class="is-size-6">${place.address}</p>
                 </div>
-                <div class='is-size-2'>&#9825; &#9829;</div>
+                <div class='is-size-2'>
+                    <button class="favorite-button" data-restaurant-id="{{ restaurant.id }}">
+                        <span class="heart-icon">
+                            &#9825; <!-- Hollow heart -->
+                        </span>
+                    </button>
+                </div>
             </div>
             <footer class="card-footer">
                 <a href="" class="card-footer-item">More</a>
@@ -158,6 +164,69 @@ function displayRestaurants(places) {
         container.appendChild(card);
     });
 }
+
+// Function to toggle favorite status
+document.addEventListener("DOMContentLoaded", function () {
+    const favoriteButtons = document.querySelectorAll('.favorite-button');
+
+    favoriteButtons.forEach(button => {
+        button.addEventListener('click', function () {
+            const restaurantId = this.getAttribute('data-restaurant-id');
+            const heartIcon = this.querySelector('.heart-icon');
+
+            // Toggle favorite status
+            if (heartIcon.innerHTML === '&#9825;') { // Hollow heart
+                heartIcon.innerHTML = '&#9829;'; // Filled heart
+                addFavorite(restaurantId); // Add to favorites
+            } else {
+                heartIcon.innerHTML = '&#9825;'; // Hollow heart
+                removeFavorite(restaurantId); // Remove from favorites
+            }
+        });
+    });
+
+    function toggleFavorite(restaurantId) {
+        const heartButton = document.getElementById(`favorite-button-${restaurantId}`);
+        const isFavorited = heartButton.classList.toggle('favorited'); // toggles class
+
+        // Change heart icon
+        heartButton.innerHTML = isFavorited ? '&#9829;' : '&#9825;'; // filled or hollow heart
+
+        // Make AJAX call to backend to save/un-save favorite
+        fetch(`/favorite/${restaurantId}/`, {
+            method: isFavorited ? 'POST' : 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}', // Use your CSRF token here
+            },
+        })
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            })
+            .then(data => {
+                console.log('Success:', data);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+});
 
 // Add event listener to search button
 document.getElementById('searchButton').addEventListener('click', function() {
