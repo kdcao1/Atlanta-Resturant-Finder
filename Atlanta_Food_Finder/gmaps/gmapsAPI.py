@@ -1,7 +1,6 @@
 from flask import Flask, request, jsonify # pip install Flask
 import googlemaps # pip install googlemaps
 from flask_cors import CORS # pip install flask_cors
-import os
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -133,12 +132,13 @@ def run_django_server():
     manage_py_dir = r'C:\Users\Brian\Desktop\CompSci\CS2340\Atlanta-Resturant-Finder\Atlanta_Food_Finder'
     
     # Run manage.py runserver using subprocess
-    subprocess.run(['python', 'manage.py', 'runserver'], cwd=manage_py_dir, check=True)
+    subprocess.run(['python3', 'manage.py', 'runserver'], cwd=manage_py_dir, check=True)
+
 
 if __name__ == '__main__':
     # Only open the browser if not in reloader mode to not make it run twice
     if not os.environ.get("WERKZEUG_RUN_MAIN"):
         threading.Timer(1.25, open_browser).start()
         threading.Timer(1.5, run_django_server).start()  # Run Django server slightly after opening the browser
-    
-    app.run(host='127.0.0.1', port=443, debug=True)
+
+    app.run(host='127.0.0.1', port=5000, debug=True)

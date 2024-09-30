@@ -49,12 +49,13 @@
 
 <section class="section mt-3">
     <div class="container">
-        <h1 class="title">
-            Favorites
-        </h1>
-        <p class="subtitle">
-            Favorite restaurants
-        </p>
+        <h1 class="title">Favorites</h1>
+        <p class="subtitle">Favorite restaurants</p>
+        <ul>
+            {% for restaurant in favorite_restaurants %}
+                <li>{{ restaurant.name }}</li>
+            {% endfor %}
+        </ul>
     </div>
 </section>
 </body>
