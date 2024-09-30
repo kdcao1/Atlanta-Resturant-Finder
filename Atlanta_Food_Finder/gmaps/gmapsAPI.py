@@ -42,7 +42,7 @@ def get_place_details(place_id):
     return details_result.get('result', {})
 
 # Function to get places from Google Maps API
-def get_places(lat_lng, radius=5000, keyword=None, open_now=None, price_level=None, rating_threshold=None):
+def get_places(lat_lng, radius=18000, keyword=None, open_now=None, price_level=None, rating_threshold=None):
     # Call the Google Maps API
     places_result = gmaps.places_nearby(
         location=lat_lng,
@@ -129,10 +129,10 @@ def open_browser():
 def run_django_server():
 
     # BEFORE RUNNING, REMEMBER TO CHANGE THE PATH TO THE DIRECTORY WHERE manage.py IS LOCATED LOCALLY
-    manage_py_dir = r'C:\Users\Brian\Desktop\CompSci\CS2340\Atlanta-Resturant-Finder\Atlanta_Food_Finder'
+    manage_py_dir = '../'
     
     # Run manage.py runserver using subprocess
-    subprocess.run(['python3', 'manage.py', 'runserver'], cwd=manage_py_dir, check=True)
+    subprocess.run(['python', 'manage.py', 'runserver'], cwd=manage_py_dir, check=True)
 
 
 if __name__ == '__main__':
@@ -141,4 +141,4 @@ if __name__ == '__main__':
         threading.Timer(1.25, open_browser).start()
         threading.Timer(1.5, run_django_server).start()  # Run Django server slightly after opening the browser
 
-    app.run(host='127.0.0.1', port=5000, debug=True)
+    app.run(host='127.0.0.1', port=443, debug=True)
