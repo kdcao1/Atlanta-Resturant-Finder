@@ -203,7 +203,7 @@ function displayRestaurants(places) {
         card.innerHTML = `
             <div class='card-content is-flex is-flex-direction-row is-justify-content-space-between mx-2'>
                 <div class='is-size-2'>
-                    ${place.name}
+                    <strong>${place.name}</strong>
                     <p class="is-size-6">${place.editorial_summary}</p>
                     <div class="is-size-5">${createStarRating(place.rating)} ${createPriceRating(place.price_level)} ${checkOpenStatus(place)}</div>
                     <p class="is-size-6">${place.address}</p>
@@ -219,7 +219,7 @@ function displayRestaurants(places) {
               <div class="modal-background"></div>
               <div class="modal-card" style="width: 80vh; height: 80vh;">
                 <header class="modal-card-head">
-                  <p class="modal-card-title">${place.name}</p>
+                  <p class="modal-card-title"><strong>${place.name}</strong></p>
                   <button class="delete" aria-label="close"></button>
                 </header>
                 <section class="modal-card-body is-flex is-flex-direction-row is-justify-content-space-between">
