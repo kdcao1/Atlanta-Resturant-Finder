@@ -123,7 +123,7 @@ def search():
 
 # Function to open the browser
 def open_browser():
-    webbrowser.open('http://127.0.0.1:443/initial')
+    webbrowser.open('http://127.0.0.1:5000/initial')
 
 # Path to manage.py directory
 def run_django_server():
@@ -141,4 +141,4 @@ if __name__ == '__main__':
         threading.Timer(1.25, open_browser).start()
         threading.Timer(1.5, run_django_server).start()  # Run Django server slightly after opening the browser
 
-    app.run(host='127.0.0.1', port=443, debug=True)
+    app.run(host='127.0.0.1', port=5000, debug=True)
