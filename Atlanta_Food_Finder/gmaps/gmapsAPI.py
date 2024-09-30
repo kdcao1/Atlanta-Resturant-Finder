@@ -53,6 +53,7 @@ def get_places(lat_lng, radius=5000, keyword=None, open_now=None, price_level=No
                 'address': place.get('vicinity'),
                 'price_level': place.get('price_level', 'N/A'),
                 'rating': place.get('rating', 'N/A'),
+                'status': place.get('opening_hours'),
                 'phone_number': details.get('formatted_phone_number', 'N/A'),
                 'website': details.get('website', 'N/A'),
                 'opening_hours': details.get('opening_hours', {}).get('weekday_text', []),
@@ -72,11 +73,7 @@ def get_places(lat_lng, radius=5000, keyword=None, open_now=None, price_level=No
                 'takeout': details.get('takeout', False),
                 'user_ratings_total': details.get('user_ratings_total', 0)
             })
-
-    print("Fetched Restaurants:")
-    for place in filtered_places:
-        print(place['name'])
-
+            
     # Test print to verify that the restaurants are being fetched correctly
     print("Fetched Restaurants:")
     for place in filtered_places:
