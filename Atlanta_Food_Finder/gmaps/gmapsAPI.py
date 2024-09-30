@@ -13,6 +13,17 @@ import subprocess
 app = Flask(__name__)
 CORS(app)
 
+import math
+
+def calculate_distance(lat1, lon1, lat2, lon2):
+    lat1, lon1, lat2, lon2 = map(math.radians, [lat1, lon1, lat2, lon2])
+    dlat = lat2 - lat1 
+    dlon = lon2 - lon1 
+    a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
+    c = 2 * math.asin(math.sqrt(a))
+    km = 6371 * c
+    return km
+
 # Initialize the Google Maps client
 gmaps = googlemaps.Client(key=os.getenv('GMAPS_API_KEY'))
 
@@ -48,11 +59,16 @@ def get_places(lat_lng, radius=5000, keyword=None, open_now=None, price_level=No
         place_id = place.get('place_id')
         if place_id:
             details = get_place_details(place_id)
+            distance = calculate_distance(
+                atlanta_lat_lng[0], atlanta_lat_lng[1],
+                place['geometry']['location']['lat'], place['geometry']['location']['lng']
+            )
             filtered_places.append({
                 'name': place['name'],
                 'address': place.get('vicinity'),
                 'price_level': place.get('price_level', 'N/A'),
                 'rating': place.get('rating', 'N/A'),
+                'distance': distance,
                 'status': place.get('opening_hours', False),
                 'id': place.get('place_id'),
                 'coords': place.get('geometry'),
@@ -114,7 +130,7 @@ def open_browser():
 def run_django_server():
 
     # BEFORE RUNNING, REMEMBER TO CHANGE THE PATH TO THE DIRECTORY WHERE manage.py IS LOCATED LOCALLY
-    manage_py_dir = '../'
+    manage_py_dir = r'C:\Users\Brian\Desktop\CompSci\CS2340\Atlanta-Resturant-Finder\Atlanta_Food_Finder'
     
     # Run manage.py runserver using subprocess
     subprocess.run(['python', 'manage.py', 'runserver'], cwd=manage_py_dir, check=True)

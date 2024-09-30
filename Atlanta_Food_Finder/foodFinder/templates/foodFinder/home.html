@@ -61,7 +61,15 @@
                         <div>
                             <button id="searchButton" class="button is-primary is-normal">Search</button>
                             <button id="searchButton" class="button is-primary is-normal">Filter</button>
-                            <button id="searchButton" class="button is-primary is-normal">Sort</button>
+                            <div class="select is-primary">
+                                <select id="sortOptions">
+                                    <option value="">Sort By</option>
+                                    <option value="ratingHigh">Rating: High to Low</option>
+                                    <option value="ratingLow">Rating: Low to High</option>
+                                    <option value="distanceNear">Distance: Nearest First</option>
+                                    <option value="distanceFar">Distance: Farthest First</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                     <!-- Add a container for restaurant cards -->
@@ -113,6 +121,21 @@ function searchRestaurants(keyword) {
     .catch(error => console.error('Error searching for restaurants:', error));
 }
 
+function sortRestaurants(places, criterion) {
+    switch (criterion) {
+        case 'ratingHigh':
+            return places.sort((a, b) => b.rating - a.rating);
+        case 'ratingLow':
+            return places.sort((a, b) => a.rating - b.rating);
+        case 'distanceNear':
+            return places.sort((a, b) => a.distance - b.distance);
+        case 'distanceFar':
+            return places.sort((a, b) => b.distance - a.distance);
+        default:
+            return places;
+    }
+}
+
 function openModal($el) {
     $el.classList.add('is-active');
 }
@@ -140,6 +163,11 @@ function displayRestaurants(places) {
     container.innerHTML = ''; // Clear existing content
     container.style.height = 'calc(85vh - 30px)'; // Set the height
     container.style.overflowY = 'scroll'; // Allow vertical scrolling
+
+    const sortOption = document.getElementById('sortOptions').value;
+
+    const sortedPlaces = sortRestaurants(places, sortOption);
+
     places.forEach(place => {
         const card = document.createElement('div');
         card.className = 'card mx-2';
@@ -251,7 +279,6 @@ document.getElementById('searchButton').addEventListener('click', function() {
     }
 });
 
-
 document.getElementById('searchBar').addEventListener('keydown', function(event) {
     if (event.key === 'Enter') { // Check if the pressed key is 'Enter'
         const keyword = document.getElementById('searchBar').value;
@@ -262,6 +289,12 @@ document.getElementById('searchBar').addEventListener('keydown', function(event)
         }
     }
 });
+
+document.getElementById('sortOptions').addEventListener('change', function() {
+    fetchInitialData(); // Re-fetch and display sorted data when sorting option changes
+});
+
+
 
 // Call function to fetch initial data on page load
 document.addEventListener('DOMContentLoaded', fetchInitialData);
