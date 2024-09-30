@@ -82,12 +82,14 @@
     </div>
 </section>
 
-<script type="module" src="https://unpkg.com/@googlemaps/extended-component-library@0.6"></script>
+<script
+        src="https://maps.googleapis.com/maps/api/js?key={{ apiKey }}&loading=async&libraries=maps&v=beta" defer>
+</script>
 <script>
 
 // Function to fetch initial data from Flask server
 function fetchInitialData() {
-    fetch('http://127.0.0.1:5000/initial')
+    fetch('http://127.0.0.1:443/initial')
         .then(response => response.json())
         .then(data => {
             displayRestaurants(data.places);
@@ -97,7 +99,7 @@ function fetchInitialData() {
 
 // Function to search for restaurants based on user input
 function searchRestaurants(keyword) {
-    fetch('http://127.0.0.1:5000/search', {
+    fetch('http://127.0.0.1:443/search', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -199,8 +201,7 @@ function displayRestaurants(places) {
                     <div class="is-size-5">${createStarRating(place.rating)} ${createPriceRating(place.price_level)} ${checkOpenStatus(place)}</div>
                     <p class="is-size-6">${place.address}</p>
                   </div>
-                  <div>
-                    <gmpx-api-loader class='' key="AIzaSyB8y_QBXEuxLZUo4xlKs9mKb622hwlOJMw" solution-channel="GMP_GCC_mapandmarker_v2"></gmpx-api-loader>
+                    <div>
                         <gmp-map style="height=40em; width=100%;" map-id="4f33f0e7f6ab915e" center="${place.coords.location.lat},${place.coords.location.lng}" zoom="11">
                           <gmp-advanced-marker position="${place.coords.location.lat},${place.coords.location.lng}"></gmp-advanced-marker>
                         </gmp-map>

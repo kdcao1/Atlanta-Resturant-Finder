@@ -53,6 +53,9 @@ def get_places(lat_lng, radius=5000, keyword=None, open_now=None, price_level=No
                 'address': place.get('vicinity'),
                 'price_level': place.get('price_level', 'N/A'),
                 'rating': place.get('rating', 'N/A'),
+                'status': place.get('opening_hours', False),
+                'id': place.get('place_id'),
+                'coords': place.get('geometry'),
                 'phone_number': details.get('formatted_phone_number', 'N/A'),
                 'website': details.get('website', 'N/A'),
                 'opening_hours': details.get('opening_hours', {}).get('weekday_text', []),
@@ -72,15 +75,6 @@ def get_places(lat_lng, radius=5000, keyword=None, open_now=None, price_level=No
                 'takeout': details.get('takeout', False),
                 'user_ratings_total': details.get('user_ratings_total', 0)
             })
-
-    print("Fetched Restaurants:")
-    for place in filtered_places:
-        print(place['name'])
-
-    # Test print to verify that the restaurants are being fetched correctly
-    print("Fetched Restaurants:")
-    for place in filtered_places:
-        print(place['name'])
 
     # Return the filtered list (limit to 20 results)
     return filtered_places[:20]
@@ -109,14 +103,13 @@ def search():
 
 # Function to open the browser
 def open_browser():
-    webbrowser.open('http://127.0.0.1:5000/initial')
+    webbrowser.open('http://127.0.0.1:443/initial')
 
 # Path to manage.py directory
 def run_django_server():
 
     # BEFORE RUNNING, REMEMBER TO CHANGE THE PATH TO THE DIRECTORY WHERE manage.py IS LOCATED LOCALLY
-    manage_py_dir = r'C:\Users\Brian\Desktop\CompSci\CS2340\Atlanta-Resturant-Finder\Atlanta_Food_Finder'
-    print(manage_py_dir)
+    manage_py_dir = '../'
     
     # Run manage.py runserver using subprocess
     subprocess.run(['python', 'manage.py', 'runserver'], cwd=manage_py_dir, check=True)
@@ -127,4 +120,4 @@ if __name__ == '__main__':
         threading.Timer(1.25, open_browser).start()
         threading.Timer(1.5, run_django_server).start()  # Run Django server slightly after opening the browser
     
-    app.run(host='127.0.0.1', port=5000, debug=True)
+    app.run(host='127.0.0.1', port=443, debug=True)
