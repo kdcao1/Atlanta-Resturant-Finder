@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Atlanta Food Finder</title>
     <link rel="stylesheet" href="{% static "./foodFinder/css/bulma.css" %}">
+    <link rel="shortcut icon" type="image/png" href="{% static 'images/favicon.ico' %}" >
 </head>
 <body>
 <section class="hero is-fullheight">
@@ -67,7 +68,7 @@
                     <div id="restaurant-cards" class='card-container' style="scrollbar-width: none;"></div>
                 </div>
                 <div class='column is-half'>
-                    <iframe width="100%" style="border:0; height: 85vh; margin-top: 5%" loading="lazy" allowfullscreen src="https://www.google.com/maps/embed/v1/view?zoom=11&center=33.7488%2C-84.3877&key=AIzaSyB8y_QBXEuxLZUo4xlKs9mKb622hwlOJMw"></iframe>
+                    <iframe width="100%" style="border:0; height: 85vh; margin-top: 5%" loading="lazy" allowfullscreen src="https://www.google.com/maps/embed/v1/view?zoom=11&center=33.7488%2C-84.3877&key={{ apiKey }}"></iframe>
                 </div>
             </div>
         </div>
@@ -85,7 +86,7 @@
 
 // Function to fetch initial data from Flask server
 function fetchInitialData() {
-    fetch('http://127.0.0.1:5000/initial')
+    fetch('http://127.0.0.1:443/initial')
         .then(response => response.json())
         .then(data => {
             displayRestaurants(data.places);
@@ -95,7 +96,7 @@ function fetchInitialData() {
 
 // Function to search for restaurants based on user input
 function searchRestaurants(keyword) {
-    fetch('http://127.0.0.1:5000/search', {
+    fetch('http://127.0.0.1:443/search', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -151,7 +152,7 @@ function displayRestaurants(places) {
                 <div class='is-size-2'>&#9825; &#9829;</div>
             </div>
             <footer class="card-footer">
-                <a href="${place.website}" class="card-footer-item">More</a>
+                <a href="" class="card-footer-item">More</a>
             </footer>
         `;
         container.appendChild(card);

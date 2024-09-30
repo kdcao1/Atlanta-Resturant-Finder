@@ -1,20 +1,20 @@
 from flask import Flask, request, jsonify # pip install Flask
 import googlemaps # pip install googlemaps
 from flask_cors import CORS # pip install flask_cors
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 # Libraries for synchronized launch
 import os
 import webbrowser
 import threading
 import subprocess
-
-
 app = Flask(__name__)
 CORS(app)
 
 # Initialize the Google Maps client
-API_KEY = 'AIzaSyB8y_QBXEuxLZUo4xlKs9mKb622hwlOJMw'
-gmaps = googlemaps.Client(key=API_KEY)
+gmaps = googlemaps.Client(key=os.getenv('GMAPS_API_KEY'))
 
 # Get coordinates for Atlanta, GA
 atlanta_lat_lng = (33.7490, -84.3880)
@@ -38,6 +38,7 @@ def get_places(lat_lng, radius=5000, keyword=None, open_now=None, price_level=No
         if rating_threshold and place.get('rating') < float(rating_threshold):
             continue
         filtered_places.append({
+            'id': place.get('place_id'),
             'name': place['name'],
             'address': place.get('vicinity'),
             'price_level': place.get('price_level', 'N/A'),
@@ -77,13 +78,14 @@ def search():
 
 # Function to open the browser
 def open_browser():
-    webbrowser.open('http://127.0.0.1:5000/initial')
+    webbrowser.open('http://127.0.0.1:443/initial')
 
 # Path to manage.py directory
 def run_django_server():
 
-    # BEFPORE RUNNING, REMEMBER TO CHANGE THE PATH TO THE DIRECTORY WHERE manage.py IS LOCATED LOCALLY
-    manage_py_dir = r'C:\Users\Brian\Desktop\CompSci\CS2340\Atlanta-Resturant-Finder\Atlanta_Food_Finder'
+    # BEFORE RUNNING, REMEMBER TO CHANGE THE PATH TO THE DIRECTORY WHERE manage.py IS LOCATED LOCALLY
+    manage_py_dir = '../'
+    print(manage_py_dir)
     
     # Run manage.py runserver using subprocess
     subprocess.run(['python', 'manage.py', 'runserver'], cwd=manage_py_dir, check=True)
@@ -94,4 +96,4 @@ if __name__ == '__main__':
         threading.Timer(1.25, open_browser).start()
         threading.Timer(1.5, run_django_server).start()  # Run Django server slightly after opening the browser
     
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='127.0.0.1', port=443, debug=True)
