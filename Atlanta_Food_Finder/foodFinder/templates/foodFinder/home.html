@@ -76,7 +76,8 @@
                     <div id="restaurant-cards" class='card-container' style="scrollbar-width: none;"></div>
                 </div>
                 <div class='column is-half'>
-                    <iframe width="100%" style="border:0; height: 85vh; margin-top: 5%" loading="lazy" allowfullscreen src="https://www.google.com/maps/embed/v1/view?zoom=11&center=33.7488%2C-84.3877&key={{ apiKey }}"></iframe>
+                    <gmp-map style="height:85vh; width:100%; margin-top: 5%" map-id="1c12e499c0237ede" center="33.77166857721202, -84.38930836441801" zoom="16">
+                    </gmp-map>
                 </div>
             </div>
         </div>
@@ -91,7 +92,7 @@
 </section>
 
 <script
-        src="https://maps.googleapis.com/maps/api/js?key={{ apiKey }}&loading=async&libraries=maps&v=beta" defer>
+        src="https://maps.googleapis.com/maps/api/js?key={{ apiKey }}&loading=async&libraries=maps,marker&v=beta" defer>
 </script>
 <script>
 
@@ -198,6 +199,7 @@ function displayRestaurants(places) {
             <div class='card-content is-flex is-flex-direction-row is-justify-content-space-between mx-2'>
                 <div class='is-size-2'>
                     ${place.name}
+                    <p class="is-size-6">${place.editorial_summary}</p>
                     <div class="is-size-5">${createStarRating(place.rating)} ${createPriceRating(place.price_level)} ${checkOpenStatus(place)}</div>
                     <p class="is-size-6">${place.address}</p>
                 </div>
@@ -210,33 +212,29 @@ function displayRestaurants(places) {
             </footer>
             <div class="modal" id="modal-${place.id}">
               <div class="modal-background"></div>
-              <div class="modal-card">
+              <div class="modal-card" style="width: 80vh; height: 80vh;">
                 <header class="modal-card-head">
                   <p class="modal-card-title">${place.name}</p>
                   <button class="delete" aria-label="close"></button>
                 </header>
                 <section class="modal-card-body is-flex is-flex-direction-row is-justify-content-space-between">
-                <div class="media">
-                  <div class="media-left">
-                    <figure class="image is-48x48">
-                      <img
-                        src="https://bulma.io/assets/images/placeholders/96x96.png"
-                        alt="Placeholder image"
-                      />
-                    </figure>
-                  </div>
-                  <div class='is-size-2'>
-                    <div class="is-size-5">${createStarRating(place.rating)} ${createPriceRating(place.price_level)} ${checkOpenStatus(place)}</div>
-                    <p class="is-size-6">${place.address}</p>
-                  </div>
-                    <div>
-                        <gmp-map style="height=40em; width=100%;" map-id="4f33f0e7f6ab915e" center="${place.coords.location.lat},${place.coords.location.lng}" zoom="11">
-                          <gmp-advanced-marker position="${place.coords.location.lat},${place.coords.location.lng}"></gmp-advanced-marker>
+                <div class='columns' style="width: 100%;">
+                    <div class="column is-half">
+                          <div class='is-size-2'>
+                            <p class="is-size-6">${place.editorial_summary}</p>
+                            <div class="is-size-5">${createStarRating(place.rating)} ${createPriceRating(place.price_level)} ${checkOpenStatus(place)}</div>
+                            <p class="is-size-6">${place.address}</p>
+                            <p class="is-size-6">${place.phone_number}</p>
+                        </div>
+                    </div>
+                    <div class="column is-half">
+                        <gmp-map style="height:80%; width:100%;" map-id="1c12e499c0237ede" center="${place.coords.location.lat},${place.coords.location.lng}" zoom="18">
                         </gmp-map>
                     </div>
+                </div>
                 </section>
                     <footer class="modal-card-foot">
-
+                        <a class="button" href="${place.website}">Website</a>
                     </footer>
               </div>
             </div>
