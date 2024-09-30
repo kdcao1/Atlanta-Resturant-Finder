@@ -44,6 +44,7 @@ def get_places(lat_lng, radius=5000, keyword=None, open_now=None, price_level=No
             'price_level': place.get('price_level', 'N/A'),
             'rating': place.get('rating', 'N/A'),
             'status': place.get('opening_hours'),
+            'coords': place.get('geometry'),
         })
 
     # Test print to verify that the restaurants are being fetched correctly

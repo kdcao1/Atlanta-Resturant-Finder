@@ -76,12 +76,13 @@
     <div class="hero-foot">
         <footer class="footer">
             <div class="has-text-centered">
-                    <strong>Atlanta Food Finder</strong> by <a href="/">Team 55</a>.
+                <strong>Atlanta Food Finder</strong> by <a href="/">Team 55</a>.
             </div>
         </footer>
     </div>
 </section>
 
+<script type="module" src="https://unpkg.com/@googlemaps/extended-component-library@0.6"></script>
 <script>
 
 // Function to fetch initial data from Flask server
@@ -109,6 +110,26 @@ function searchRestaurants(keyword) {
     })
     .catch(error => console.error('Error searching for restaurants:', error));
 }
+
+function openModal($el) {
+    $el.classList.add('is-active');
+}
+
+function closeModal($el) {
+    $el.classList.remove('is-active');
+}
+
+function closeAllModals() {
+    (document.querySelectorAll('.modal') || []).forEach(($modal) => {
+        closeModal($modal);
+    });
+}
+
+document.addEventListener('keydown', (event) => {
+    if(event.key === "Escape") {
+        closeAllModals();
+    }
+});
 
 // Function to display restaurants as cards
 function displayRestaurants(places) {
@@ -142,6 +163,7 @@ function displayRestaurants(places) {
                 return "Closed"; // If false, return "Closed"
             }
         }
+
         card.innerHTML = `
             <div class='card-content is-flex is-flex-direction-row is-justify-content-space-between mx-2'>
                 <div class='is-size-2'>
@@ -149,15 +171,74 @@ function displayRestaurants(places) {
                     <div class="is-size-5">${createStarRating(place.rating)} ${createPriceRating(place.price_level)} ${checkOpenStatus(place)}</div>
                     <p class="is-size-6">${place.address}</p>
                 </div>
-                <div class='is-size-2'>&#9825; &#9829;</div>
+                <div class='is-size-2'>
+                    &#9825; &#9829;
+                </div>
             </div>
             <footer class="card-footer">
-                <a href="" class="card-footer-item">More</a>
+                <button class="card-footer-item" data-target="modal-${place.id}">More</button>
             </footer>
+            <div class="modal" id="modal-${place.id}">
+              <div class="modal-background"></div>
+              <div class="modal-card">
+                <header class="modal-card-head">
+                  <p class="modal-card-title">${place.name}</p>
+                  <button class="delete" aria-label="close"></button>
+                </header>
+                <section class="modal-card-body is-flex is-flex-direction-row is-justify-content-space-between">
+                <div class="media">
+                  <div class="media-left">
+                    <figure class="image is-48x48">
+                      <img
+                        src="https://bulma.io/assets/images/placeholders/96x96.png"
+                        alt="Placeholder image"
+                      />
+                    </figure>
+                  </div>
+                  <div class='is-size-2'>
+                    <div class="is-size-5">${createStarRating(place.rating)} ${createPriceRating(place.price_level)} ${checkOpenStatus(place)}</div>
+                    <p class="is-size-6">${place.address}</p>
+                  </div>
+                  <div>
+                    <gmpx-api-loader class='' key="AIzaSyB8y_QBXEuxLZUo4xlKs9mKb622hwlOJMw" solution-channel="GMP_GCC_mapandmarker_v2"></gmpx-api-loader>
+                        <gmp-map style="height=40em; width=100%;" map-id="4f33f0e7f6ab915e" center="${place.coords.location.lat},${place.coords.location.lng}" zoom="11">
+                          <gmp-advanced-marker position="${place.coords.location.lat},${place.coords.location.lng}"></gmp-advanced-marker>
+                        </gmp-map>
+                    </div>
+                </section>
+                    <footer class="modal-card-foot">
+
+                    </footer>
+              </div>
+            </div>
         `;
         container.appendChild(card);
     });
 }
+
+document.getElementById('restaurant-cards').addEventListener('click', (event) => {
+    // Check if the clicked element is the one you want
+    if (event.target.classList.contains('card-footer-item')) {
+        const modalId = event.target.dataset.target; // Get the modal ID from the data attribute
+        const $targetModal = document.getElementById(modalId); // Find the modal by ID
+        if ($targetModal) {
+            openModal($targetModal); // Open the modal
+        }
+    }
+});
+
+
+
+document.getElementById('restaurant-cards').addEventListener('click', (event) => {
+    // Check if the clicked element is a close button
+    if (event.target.classList.contains('delete') || event.target.classList.contains('close-modal')) {
+        const $modal = event.target.closest('.modal'); // Find the closest modal element
+
+        if ($modal) {
+            closeModal($modal); // Close the modal
+        }
+    }
+});
 
 // Add event listener to search button
 document.getElementById('searchButton').addEventListener('click', function() {
@@ -168,6 +249,7 @@ document.getElementById('searchButton').addEventListener('click', function() {
         fetchInitialData();
     }
 });
+
 
 document.getElementById('searchBar').addEventListener('keydown', function(event) {
     if (event.key === 'Enter') { // Check if the pressed key is 'Enter'
