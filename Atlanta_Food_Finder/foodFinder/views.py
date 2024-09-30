@@ -45,6 +45,11 @@ def register(request):
                     password=password
                 )
                 user.save()
+
+                # Creates the associated Guest object for the new user
+                guest = Guest.objects.create(user=user, location='Unknown')
+                guest.save()
+
                 messages.success(request, 'Registration was successful!')
                 return redirect('login')
         else:
