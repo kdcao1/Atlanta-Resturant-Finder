@@ -73,7 +73,7 @@ def get_places(lat_lng, radius=5000, keyword=None, open_now=None, price_level=No
                 'serves_vegetarian_food': details.get('serves_vegetarian_food', False),
                 'serves_wine': details.get('serves_wine', False),
                 'takeout': details.get('takeout', False),
-                'user_ratings_total': details.get('user_ratings_total', 0)
+                'user_ratings_total': details.get('user_ratings_total', 0),
             })
             
     # Test print to verify that the restaurants are being fetched correctly
