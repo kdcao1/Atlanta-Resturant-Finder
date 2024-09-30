@@ -13,8 +13,6 @@ import subprocess
 app = Flask(__name__)
 CORS(app)
 
-
-
 def calculate_distance(lat1, lon1, lat2, lon2):
     lat1, lon1, lat2, lon2 = map(math.radians, [lat1, lon1, lat2, lon2])
     dlat = lat2 - lat1 

@@ -95,13 +95,16 @@
         src="https://maps.googleapis.com/maps/api/js?key={{ apiKey }}&loading=async&libraries=maps,marker&v=beta" defer>
 </script>
 <script>
-
+let favoriteRestaurants = [];
 // Function to fetch initial data from Flask server
+
+
 function fetchInitialData() {
     fetch('http://127.0.0.1:5000/initial')
         .then(response => response.json())
         .then(data => {
             displayRestaurants(data.places);
+            addMarkers(data.places);
         })
         .catch(error => console.error('Error fetching initial data:', error));
 }
@@ -118,6 +121,7 @@ function searchRestaurants(keyword) {
     .then(response => response.json())
     .then(data => {
         displayRestaurants(data.places);
+        addMarkers(data.places);
     })
     .catch(error => console.error('Error searching for restaurants:', error));
 }
@@ -172,6 +176,7 @@ function displayRestaurants(places) {
     places.forEach(place => {
         const card = document.createElement('div');
         card.className = 'card mx-2';
+
         function createStarRating(rating) {
             let starsHTML = '';
             for (let i = 1; i <= place.rating; i++) { // Assuming a maximum of 5 stars
@@ -204,7 +209,7 @@ function displayRestaurants(places) {
                     <p class="is-size-6">${place.address}</p>
                 </div>
                 <div class='is-size-2' onclick="toggleFavorite(this)">
-                    <img class="heart-icon" src="{% static 'images/heart-unfilled.png' %}" alt="Heart Icon" style="width: 40px; height: 40px;">
+                    <img class="heart-icon" src="{% static 'images/heart-unfilled.png' %}" alt="Heart Icon" style="width: 40px; height: 40px;" onclick="toggleFavorite(this)">
                 </div>
             </div>
             <footer class="card-footer">
@@ -241,6 +246,15 @@ function displayRestaurants(places) {
         `;
         container.appendChild(card);
     });
+}
+
+function toggleFavorite(element) {
+    // Check the current state of the heart icon
+    if (element.src.includes("heart-unfilled.png")) {
+        element.src = "{% static 'images/heart-filled.png' %}";  // Change to filled heart
+    } else {
+        element.src = "{% static 'images/heart-unfilled.png' %}";  // Change back to hollow heart
+    }
 }
 
 document.getElementById('restaurant-cards').addEventListener('click', (event) => {
@@ -296,16 +310,6 @@ document.getElementById('sortOptions').addEventListener('change', function() {
 
 // Call function to fetch initial data on page load
 document.addEventListener('DOMContentLoaded', fetchInitialData);
-
-
-function toggleFavorite(element) {
-    // Check the current state of the heart icon
-    if (element.src.includes("heart-unfilled.png")) {
-        element.src = "{% static 'foodFinder/images/heart-filled.png' %}";  // Change to filled heart
-    } else {
-        element.src = "{% static 'foodFinder/images/heart-unfilled.png' %}";  // Change back to hollow heart
-    }
-}
 
 function addFavoriteIconsToCards() {
     const restaurantCards = document.querySelectorAll('.restaurant-card');
