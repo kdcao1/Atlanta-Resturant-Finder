@@ -141,7 +141,7 @@ def settings(request):
 
             # Save guest profile and user details
             guest = form.save()
-            user_profile.username = request.POST.get('username', user_profile.username)
+
             user_profile.email = request.POST.get('email', user_profile.email)
             user_profile.location = request.POST.get('location', user_profile.location)
             user_profile.bio = request.POST.get('bio', user_profile.bio)
@@ -153,6 +153,7 @@ def settings(request):
             if profile_picture:
                 user_profile.profile_picture = profile_picture
 
+            user_profile.user.save()
             user_profile.save()  # Save user profile changes
             guest.save()  # Save guest profile changes
             return redirect('settings')  # Redirect to the settings page or another page after saving
