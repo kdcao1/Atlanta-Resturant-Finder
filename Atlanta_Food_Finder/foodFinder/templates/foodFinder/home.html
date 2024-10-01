@@ -113,7 +113,7 @@
 <script>
 // Function to fetch initial data from Flask server
 function fetchInitialData() {
-    fetch('http://127.0.0.1:'+{{ port }}+'/initial')
+    fetch('http://0.0.0.0:'+{{ port }}+'/initial')
         .then(response => response.json())
         .then(data => {
             displayRestaurants(data.places);
@@ -123,7 +123,7 @@ function fetchInitialData() {
 
 // Function to search for restaurants based on user input
 function searchRestaurants(keyword) {
-    fetch('http://127.0.0.1:'+{{ port }}+'/search', {
+    fetch('http://0.0.0.0:'+{{ port }}+'/search', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

@@ -125,16 +125,16 @@ def search():
 
 # Function to open the browser
 def open_browser():
-    webbrowser.open('http://127.0.0.1:'+str(setPort)+'/initial')
+    webbrowser.open('http://0.0.0.0:'+str(setPort)+'/initial')
 
 # Path to manage.py directory
 def run_django_server():
 
     # BEFORE RUNNING, REMEMBER TO CHANGE THE PATH TO THE DIRECTORY WHERE manage.py IS LOCATED LOCALLY
-    manage_py_dir = '../'
+    manage_py_dir = '/app/Atlanta_Food_Finder'
     
     # Run manage.py runserver using subprocess
-    subprocess.run(['start', 'cmd', '/k', 'py manage.py runserver'], cwd=manage_py_dir, check=True, shell=True)
+    subprocess.run(['python', 'manage.py', 'runserver', '0.0.0.0:5001'], cwd=manage_py_dir, check=True)
 
 
 if __name__ == '__main__':
@@ -143,4 +143,4 @@ if __name__ == '__main__':
         threading.Timer(1.25, open_browser).start()
         threading.Timer(1.5, run_django_server).start()  # Run Django server slightly after opening the browser
 
-    app.run(host='127.0.0.1', port=setPort, debug=True)
+    app.run(host='0.0.0.0', port=setPort, debug=True)
