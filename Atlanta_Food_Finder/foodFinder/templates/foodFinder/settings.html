@@ -62,7 +62,7 @@
             <!-- Profile Picture Upload -->
             <div class="field">
                 <label class="label">Upload New Profile Picture</label>
-                <input type="file" id="profilePictureInput" name="profile_picture" accept="image/*" class="input" disabled>
+                <input type="file" id="profilePictureInput" name="profile_picture" accept="image/*" class="input" {% if not can_edit %}disabled{% endif %}>
             </div>
 
             <!-- Crop & Adjust Profile Picture -->
@@ -85,22 +85,22 @@
             <!-- Additional Settings -->
             <div class="field mt-5">
                 <label class="label">Username</label>
-                <input type="text" name="username" class="input short-input" value="{{ guest.username }}" placeholder="Enter your username" disabled>
+                <input type="text" name="username" class="input short-input" value="{{ guest.username }}" placeholder="Enter your username" {% if not can_edit %}disabled{% endif %}>
             </div>
 
             <div class="field mt-5">
                 <label class="label">Email</label>
-                <input type="email" name="email" class="input short-input" value="{{ guest.email }}" placeholder="Enter your email" disabled>
+                <input type="email" name="email" class="input short-input" value="{{ guest.email }}" placeholder="Enter your email" {% if not can_edit %}disabled{% endif %}>
             </div>
 
             <div class="field mt-5">
                 <label class="label">Location</label>
-                <input type="text" name="location" class="input short-input" value="{{ guest.location }}" placeholder="Enter your location" disabled>
+                <input type="text" name="location" class="input short-input" value="{{ guest.location }}" placeholder="Enter your location" {% if not can_edit %}disabled{% endif %}>
             </div>
 
             <div class="field mt-5">
                 <label class="label">Bio</label>
-                <textarea name="bio" class="textarea" placeholder="Tell us about yourself..." disabled>{{ guest.bio }}</textarea>
+                <textarea name="bio" class="textarea" placeholder="Tell us about yourself..." {% if not can_edit %}disabled{% endif %}>{{ guest.bio }}</textarea>
             </div>
 
             <div class="field mt-5">
@@ -206,6 +206,48 @@
             croppedImageData.value = croppedCanvas.toDataURL('image/png'); // Convert to base64 and set hidden input value
         }
     });
+
+    // to handle edit cancel swap
+    document.getElementById('editButton').addEventListener('click', function() {
+        const fields = document.querySelectorAll('.input, .textarea');
+        fields.forEach(field => field.disabled = false);
+        document.getElementById('cropButtons').style.display = 'block';
+        document.getElementById('cancelButton').style.display = 'inline-block';
+        document.querySelector('.button.is-primary').style.display = 'inline-block';
+        this.style.display = 'none';
+    });
+
+    document.getElementById('cancelButton').addEventListener('click', function() {
+        const fields = document.querySelectorAll('.input, .textarea');
+        fields.forEach(field => field.disabled = true);
+        document.getElementById('cropButtons').style.display = 'none';
+        document.getElementById('editButton').style.display = 'inline-block';
+        this.style.display = 'none';
+        document.querySelector('.button.is-primary').style.display = 'none';
+    });
+
+    function toggleFavorite(element, placeName) {
+        // Get the current list of favorites from localStorage
+        let favorites = JSON.parse(localStorage.getItem('favoriteRestaurants')) || [];
+
+        // Check the current state of the heart icon
+        if (element.src.includes("heart-unfilled-new.png")) {
+            element.src = "{% static 'images/heart-filled-new.png' %}"; // Change to filled heart
+
+            // Add restaurant to favorites if not already in the list
+            if (!favorites.includes(placeName)) {
+                favorites.push(placeName);
+            }
+        } else {
+            element.src = "{% static 'images/heart-unfilled-new.png' %}"; // Change back to hollow heart
+
+            // Remove restaurant from favorites
+            favorites = favorites.filter(favorite => favorite !== placeName);
+        }
+
+        // Save the updated favorites back to localStorage
+        localStorage.setItem('favoriteRestaurants', JSON.stringify(favorites));
+    }
 </script>
 
 </body>

@@ -95,7 +95,6 @@
         src="https://maps.googleapis.com/maps/api/js?key={{ apiKey }}&loading=async&libraries=maps,marker&v=beta" defer>
 </script>
 <script>
-let favoriteRestaurants = [];
 // Function to fetch initial data from Flask server
 
 
@@ -173,9 +172,13 @@ function displayRestaurants(places) {
 
     const sortedPlaces = sortRestaurants(places, sortOption);
 
-    places.forEach(place => {
+    sortedPlaces.forEach(place => {
         const card = document.createElement('div');
         card.className = 'card mx-2';
+
+        const heartIconSrc = favoriteRestaurants.includes(place.name) ?
+            "{% static 'images/heart-filled-new.png' %}" :
+            "{% static 'images/heart-unfilled-new.png' %}";
 
         function createStarRating(rating) {
             let starsHTML = '';
@@ -209,7 +212,7 @@ function displayRestaurants(places) {
                     <p class="is-size-6">${place.address}</p>
                 </div>
                 <div class='is-size-2' onclick="toggleFavorite(this)">
-                    <img class="heart-icon" src="{% static 'images/heart-unfilled.png' %}" alt="Heart Icon" style="width: 40px; height: 40px;" onclick="toggleFavorite(this)">
+                    <img class="heart-icon" src="${heartIconSrc}" alt="Heart Icon" style="width: 40px; height: 40px;" data-restaurant="${place.name}">
                 </div>
             </div>
             <footer class="card-footer">
@@ -248,14 +251,41 @@ function displayRestaurants(places) {
     });
 }
 
+// Get the existing favorites from local storage
+let favoriteRestaurants = JSON.parse(localStorage.getItem('favoriteRestaurants')) || [];
+
+// Function to update the heart icon and local storage
 function toggleFavorite(element) {
-    // Check the current state of the heart icon
-    if (element.src.includes("heart-unfilled.png")) {
-        element.src = "{% static 'images/heart-filled.png' %}";  // Change to filled heart
+    const restaurantName = element.closest('.card').querySelector('.is-size-2 strong').textContent;
+    const isFavorited = favoriteRestaurants.includes(restaurantName);
+
+    if (isFavorited) {
+        favoriteRestaurants = favoriteRestaurants.filter(name => name !== restaurantName);
     } else {
-        element.src = "{% static 'images/heart-unfilled.png' %}";  // Change back to hollow heart
+        favoriteRestaurants.push(restaurantName);
+    }
+
+    localStorage.setItem('favoriteRestaurants', JSON.stringify(favoriteRestaurants));
+    updateHeartIcon(restaurantName, !isFavorited);
+}
+
+function updateHeartIcon(restaurantName, isFavorited) {
+    const heartIcon = document.querySelector(`.heart-icon[data-restaurant="${restaurantName}"]`);
+    if (heartIcon) {
+        heartIcon.src = isFavorited ? "{% static 'images/heart-filled-new.png' %}" : "{% static 'images/heart-unfilled-new.png' %}";
     }
 }
+
+
+
+// On page load, check local storage and update the UI accordingly
+document.addEventListener('DOMContentLoaded', () => {
+    favoriteRestaurants.forEach(restaurantName => {
+        updateHeartIcon(restaurantName, true);
+    });
+    fetchInitialData();
+});
+
 
 document.getElementById('restaurant-cards').addEventListener('click', (event) => {
     // Check if the clicked element is the one you want
@@ -321,7 +351,7 @@ function addFavoriteIconsToCards() {
 
         // Create an img element for the heart icon
         const heartIcon = document.createElement('img');
-        heartIcon.src = "/static/images/heart-unfilled.png";
+        heartIcon.src = "/static/images/heart-unfilled-new.png";
         heartIcon.alt = "Favorite";
         heartIcon.className = "heart-icon";
 
@@ -333,10 +363,10 @@ function addFavoriteIconsToCards() {
 
         // Add event listener for toggling the favorite icon
         favoriteButton.addEventListener('click', function () {
-            if (heartIcon.src.includes('heart-unfilled.png')) {
-                heartIcon.src = "/static/images/heart-filled.png";
+            if (heartIcon.src.includes('heart-unfilled-new.png')) {
+                heartIcon.src = "/static/images/heart-filled-new.png";
             } else {
-                heartIcon.src = "/static/images/heart-unfilled.png";
+                heartIcon.src = "/static/images/heart-unfilled-new.png";
             }
         });
     });
@@ -355,10 +385,10 @@ document.addEventListener('DOMContentLoaded', function () {
             const icon = this.querySelector('img');
 
             // Toggle between favorite/unfavorite
-            if (icon.src.includes('heart-unfilled.png')) {
+            if (icon.src.includes('heart-unfilled-new.png')) {
                 icon.src = "{% static 'images/heart-filled.png' %}";
             } else {
-                icon.src = "{% static 'images/heart-unfilled.png' %}";
+                icon.src = "{% static 'images/heart-unfilled-new.png' %}";
             }
         });
     });

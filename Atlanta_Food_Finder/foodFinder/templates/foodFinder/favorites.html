@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Atlanta Food Finder</title>
     <link rel="stylesheet" href="{% static "./foodFinder/css/bulma.css" %}">
+    <link rel="shortcut icon" type="image/png" href="{% static 'images/favicon.ico' %}" >
 </head>
 <body>
 <nav class="navbar is-fixed-top" role="navigation" aria-label="main navigation">
@@ -20,7 +21,6 @@
             <a class="navbar-item" href="/foodFinder">
                 Home
             </a>
-
             <a class="navbar-item" href="/foodFinder/favorites">
                 Favorites
             </a>
@@ -49,14 +49,44 @@
 
 <section class="section mt-3">
     <div class="container">
-        <h1 class="title">Favorites</h1>
-        <p class="subtitle">Favorite restaurants</p>
-        <ul>
-            {% for restaurant in favorite_restaurants %}
-                <li>{{ restaurant.name }}</li>
-            {% endfor %}
-        </ul>
+        <h1 class="title">Favorite Restaurants</h1>
+        <button id="clear-favorites">Clear Favorites</button>
+        <div id="favorite-cards" class="card-container"></div>
     </div>
 </section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const favorites = JSON.parse(localStorage.getItem('favoriteRestaurants')) || [];
+        const container = document.getElementById('favorite-cards');
+
+        if (favorites.length === 0) {
+            container.innerHTML = '<p>No favorite restaurants added.</p>';
+            return;
+        }
+
+        favorites.forEach(name => {
+            if (typeof name === 'string' && name.trim() !== '') {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+        <div class='card-content'>
+            <h2>${name}</h2>
+            <div class='is-size-2'>
+                <img src="{% static 'images/heart-filled-new.png' %}" alt="Favorite Icon" style="width: 40px; height: 40px;">
+            </div>
+        </div>
+        `;
+                container.appendChild(card);
+            }
+        });
+    });
+
+    document.getElementById('clear-favorites').addEventListener('click', function() {
+        localStorage.removeItem('favoriteRestaurants');
+        alert('Favorites cleared!');
+        location.reload();  // Reload the page to see the changes
+    });
+</script>
 </body>
 </html>
