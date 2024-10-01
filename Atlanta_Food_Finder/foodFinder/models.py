@@ -7,8 +7,7 @@ from django.dispatch import receiver
 
 
 class Restaurant(models.Model):
-    name = models.CharField(max_length=100)
-    address = models.TextField()
+    placeId = models.CharField(max_length=100)
 
 
 class Guest(models.Model):
