@@ -20,6 +20,7 @@ def home(request):
     else:
         context = {
             'apiKey': os.getenv('GMAPS_API_KEY'),
+            'port': 443
         }
         return render(request, "foodFinder/home.html", context)
 

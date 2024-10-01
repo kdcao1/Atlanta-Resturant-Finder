@@ -14,6 +14,8 @@ CORS(app)
 
 import math
 
+setPort = 443
+
 def calculate_distance(lat1, lon1, lat2, lon2):
     lat1, lon1, lat2, lon2 = map(math.radians, [lat1, lon1, lat2, lon2])
     dlat = lat2 - lat1 
@@ -123,7 +125,7 @@ def search():
 
 # Function to open the browser
 def open_browser():
-    webbrowser.open('http://127.0.0.1:5000/initial')
+    webbrowser.open('http://127.0.0.1:'+str(setPort)+'/initial')
 
 # Path to manage.py directory
 def run_django_server():
@@ -141,4 +143,4 @@ if __name__ == '__main__':
         threading.Timer(1.25, open_browser).start()
         threading.Timer(1.5, run_django_server).start()  # Run Django server slightly after opening the browser
 
-    app.run(host='127.0.0.1', port=5000, debug=True)
+    app.run(host='127.0.0.1', port=setPort, debug=True)
