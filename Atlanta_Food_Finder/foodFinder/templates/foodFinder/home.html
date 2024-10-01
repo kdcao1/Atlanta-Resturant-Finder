@@ -60,7 +60,23 @@
                         </div>
                         <div>
                             <button id="searchButton" class="button is-primary is-normal">Search</button>
-                            <button id="searchButton" class="button is-primary is-normal">Filter</button>
+                            <div class="select is-primary">
+                                <select id="ratingFilter">
+                                    <option value="">Filter by Rating</option>
+                                    <option value="4">4 & Up</option>
+                                    <option value="3">3 & Up</option>
+                                    <option value="2">2 & Up</option>
+                                    <option value="1">1 & Up</option>
+                                </select>
+                            </div>
+                            <div class="select is-primary">
+                                <select id="distanceFilter">
+                                    <option value="">Filter by Distance</option>
+                                    <option value="5">Within 5 km</option>
+                                    <option value="10">Within 10 km</option>
+                                    <option value="20">Within 20 km</option>
+                                </select>
+                            </div>
                             <div class="select is-primary">
                                 <select id="sortOptions">
                                     <option value="">Sort By</option>
@@ -95,16 +111,13 @@
         src="https://maps.googleapis.com/maps/api/js?key={{ apiKey }}&loading=async&libraries=maps,marker&v=beta" defer>
 </script>
 <script>
-let favoriteRestaurants = [];
+
 // Function to fetch initial data from Flask server
-
-
 function fetchInitialData() {
     fetch('http://127.0.0.1:'+{{port}}+'/initial')
         .then(response => response.json())
         .then(data => {
             displayRestaurants(data.places);
-            addMarkers(data.places);
         })
         .catch(error => console.error('Error fetching initial data:', error));
 }
@@ -121,7 +134,6 @@ function searchRestaurants(keyword) {
     .then(response => response.json())
     .then(data => {
         displayRestaurants(data.places);
-        addMarkers(data.places);
     })
     .catch(error => console.error('Error searching for restaurants:', error));
 }
@@ -139,6 +151,15 @@ function sortRestaurants(places, criterion) {
         default:
             return places;
     }
+}
+
+
+function filterByRating(places, rating) {
+    return places.filter(place => place.rating >= rating);
+}
+
+function filterByDistance(places, distance) {
+    return places.filter(place => place.distance <= distance);
 }
 
 function openModal($el) {
@@ -169,14 +190,27 @@ function displayRestaurants(places) {
     container.style.height = 'calc(85vh - 30px)'; // Set the height
     container.style.overflowY = 'scroll'; // Allow vertical scrolling
 
+    const ratingFilter = document.getElementById('ratingFilter').value;
+    const distanceFilter = document.getElementById('distanceFilter').value;
     const sortOption = document.getElementById('sortOptions').value;
 
+    // Apply rating filter if selected
+    if (ratingFilter) {
+        places = filterByRating(places, parseInt(ratingFilter));
+    }
+
+    // Apply distance filter if selected
+    if (distanceFilter) {
+        places = filterByDistance(places, parseInt(distanceFilter));
+    }
+
+    // Apply sorting after filtering
     const sortedPlaces = sortRestaurants(places, sortOption);
+
 
     places.forEach(place => {
         const card = document.createElement('div');
         card.className = 'card mx-2';
-
         function createStarRating(rating) {
             let starsHTML = '';
             for (let i = 1; i <= place.rating; i++) { // Assuming a maximum of 5 stars
@@ -203,13 +237,13 @@ function displayRestaurants(places) {
         card.innerHTML = `
             <div class='card-content is-flex is-flex-direction-row is-justify-content-space-between mx-2'>
                 <div class='is-size-2'>
-                    <strong>${place.name}</strong>
+                    ${place.name}
                     <p class="is-size-6">${place.editorial_summary}</p>
                     <div class="is-size-5">${createStarRating(place.rating)} ${createPriceRating(place.price_level)} ${checkOpenStatus(place)}</div>
                     <p class="is-size-6">${place.address}</p>
                 </div>
-                <div class='is-size-2' onclick="toggleFavorite(this)">
-                    <img class="heart-icon" src="{% static 'images/heart-unfilled.png' %}" alt="Heart Icon" style="width: 40px; height: 40px;" onclick="toggleFavorite(this)">
+                <div class='is-size-2'>
+                    &#9825; &#9829;
                 </div>
             </div>
             <footer class="card-footer">
@@ -219,13 +253,13 @@ function displayRestaurants(places) {
               <div class="modal-background"></div>
               <div class="modal-card" style="width: 80vh; height: 80vh;">
                 <header class="modal-card-head">
-                  <p class="modal-card-title"><strong>${place.name}</strong></p>
+                  <p class="modal-card-title">${place.name}</p>
                   <button class="delete" aria-label="close"></button>
                 </header>
                 <section class="modal-card-body is-flex is-flex-direction-row is-justify-content-space-between">
                 <div class='columns' style="width: 100%;">
                     <div class="column is-half">
-                        <div class='is-size-2'>
+                          <div class='is-size-2'>
                             <p class="is-size-6">${place.editorial_summary}</p>
                             <div class="is-size-5">${createStarRating(place.rating)} ${createPriceRating(place.price_level)} ${checkOpenStatus(place)}</div>
                             <p class="is-size-6">${place.address}</p>
@@ -246,15 +280,6 @@ function displayRestaurants(places) {
         `;
         container.appendChild(card);
     });
-}
-
-function toggleFavorite(element) {
-    // Check the current state of the heart icon
-    if (element.src.includes("heart-unfilled.png")) {
-        element.src = "{% static 'images/heart-filled.png' %}";  // Change to filled heart
-    } else {
-        element.src = "{% static 'images/heart-unfilled.png' %}";  // Change back to hollow heart
-    }
 }
 
 document.getElementById('restaurant-cards').addEventListener('click', (event) => {
@@ -302,67 +327,24 @@ document.getElementById('searchBar').addEventListener('keydown', function(event)
     }
 });
 
+
+
+
 document.getElementById('sortOptions').addEventListener('change', function() {
-    fetchInitialData(); // Re-fetch and display sorted data when sorting option changes
+    searchRestaurants(keyword);
+});
+
+document.getElementById('ratingFilter').addEventListener('change', function() {
+    searchRestaurants(keyword); 
 });
 
 
+document.getElementById('distanceFilter').addEventListener('change', function() {
+    searchRestaurants(keyword); 
+});
 
 // Call function to fetch initial data on page load
 document.addEventListener('DOMContentLoaded', fetchInitialData);
-
-function addFavoriteIconsToCards() {
-    const restaurantCards = document.querySelectorAll('.restaurant-card');
-
-    restaurantCards.forEach(card => {
-        // Create a new div for the favorite button
-        const favoriteButton = document.createElement('div');
-        favoriteButton.className = 'favorite-button';
-
-        // Create an img element for the heart icon
-        const heartIcon = document.createElement('img');
-        heartIcon.src = "/static/images/heart-unfilled.png";
-        heartIcon.alt = "Favorite";
-        heartIcon.className = "heart-icon";
-
-        // Append the heart icon to the favorite button div
-        favoriteButton.appendChild(heartIcon);
-
-        // Append the favorite button div to the restaurant card
-        card.appendChild(favoriteButton);
-
-        // Add event listener for toggling the favorite icon
-        favoriteButton.addEventListener('click', function () {
-            if (heartIcon.src.includes('heart-unfilled.png')) {
-                heartIcon.src = "/static/images/heart-filled.png";
-            } else {
-                heartIcon.src = "/static/images/heart-unfilled.png";
-            }
-        });
-    });
-}
-
-// Call this function after the cards are generated by the Google API
-googleApiCallCompletedCallback = function() {
-    addFavoriteIconsToCards();
-};
-
-document.addEventListener('DOMContentLoaded', function () {
-    const favoriteButtons = document.querySelectorAll('.favorite-button');
-
-    favoriteButtons.forEach(button => {
-        button.addEventListener('click', function () {
-            const icon = this.querySelector('img');
-
-            // Toggle between favorite/unfavorite
-            if (icon.src.includes('heart-unfilled.png')) {
-                icon.src = "{% static 'images/heart-filled.png' %}";
-            } else {
-                icon.src = "{% static 'images/heart-unfilled.png' %}";
-            }
-        });
-    });
-});
 </script>
 
 </body>
