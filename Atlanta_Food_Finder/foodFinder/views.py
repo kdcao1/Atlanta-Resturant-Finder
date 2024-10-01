@@ -13,7 +13,7 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
-
+port = 443
 
 def home(request):
     if not request.user.is_authenticated:
@@ -45,7 +45,7 @@ def home(request):
     context = {
         'lovedPlaces': guest.favorite_restaurants.all(),
         'apiKey': os.getenv('GMAPS_API_KEY'),
-        'port': 443,
+        'port': port,
     }
     return render(request, "foodFinder/home.html", context)
 
@@ -122,7 +122,6 @@ def favorites(request):
     guest = Guest.objects.get(user=request.user)
 
     if request.POST.get('action') == 'unfavorite':
-        print('unloved')
         placeId = request.POST.get('placeId')
         form = Favorite(request.POST)
         if form.is_valid():
@@ -133,7 +132,7 @@ def favorites(request):
     context = {
         'lovedPlaces': guest.favorite_restaurants.all(),
         'apiKey': os.getenv('GMAPS_API_KEY'),
-        'port': 443,
+        'port': port,
     }
 
     return render(request, "foodFinder/favorites.html", context)
