@@ -108,6 +108,7 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+LOGOUT_REDIRECT_URL = '/foodfinder/login'
 
 
 # Internationalization

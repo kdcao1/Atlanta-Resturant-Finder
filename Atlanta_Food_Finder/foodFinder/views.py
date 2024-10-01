@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.views.decorators.http import require_POST
 from .forms import ProfileForm
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import *
@@ -93,10 +93,9 @@ def logins(request):
     }
     return render(request, "foodFinder/login.html", context)
 
-
-
-@login_required
 def favorites(request):
+    if not request.user.is_authenticated:
+        return redirect('/foodFinder/login/')
     favorite_restaurants = request.user.guest.favorite_restaurants.all() if request.user.is_authenticated else []
     context = {
         'favorite_restaurants': favorite_restaurants,
@@ -118,12 +117,17 @@ def favorite_restaurant(request, restaurant_id):
     return JsonResponse({'error': 'User not authenticated'}, status=403)
 
 
-@login_required
 def settings(request):
+    if not request.user.is_authenticated:
+        return redirect('/foodFinder/login/')
     guest = Guest.objects.get(user=request.user)
     user_profile = UserProfile.objects.get(user=request.user)
 
     if request.method == "POST":
+        if request.POST.get('action') == 'logout':
+            logout(request)
+            print('Logged Out')
+            return redirect('/foodFinder/login')
         form = ProfileForm(request.POST, request.FILES, instance=guest)
 
         cropped_image_data = request.POST.get('cropped_image_data', None)
