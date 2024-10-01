@@ -2,7 +2,6 @@ from django.shortcuts import render, redirect
 from django.views.decorators.http import require_POST
 from .forms import ProfileForm, Favorite
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import *
 from django.http import JsonResponse
@@ -39,7 +38,7 @@ def home(request):
         placeId = request.POST.get('placeId')
         form = Favorite(request.POST)
         if form.is_valid():
-            restaurant = Restaurant.objects.get(id=placeId)
+            restaurant = Restaurant.objects.get(placeId=placeId)
             guest.favorite_restaurants.remove(restaurant)
             guest.save()
 
@@ -121,10 +120,35 @@ def logins(request):
 def favorites(request):
     if not request.user.is_authenticated:
         return redirect('/foodFinder/login/')
-    favorite_restaurants = request.user.guest.favorite_restaurants.all() if request.user.is_authenticated else []
+
+    guest = Guest.objects.get(user=request.user)
+
+    if request.POST.get('action') == 'favorite':
+        print('loved')
+        placeId = request.POST.get('placeId')
+        form = Favorite(request.POST)
+        if form.is_valid():
+            restaurant = Restaurant.objects.get_or_create(
+                placeId=placeId,
+            )
+            guest.favorite_restaurants.add(restaurant)
+            guest.save()
+
+    if request.POST.get('action') == 'unfavorite':
+        print('unloved')
+        placeId = request.POST.get('placeId')
+        form = Favorite(request.POST)
+        if form.is_valid():
+            restaurant = Restaurant.objects.get(placeId=placeId)
+            guest.favorite_restaurants.remove(restaurant)
+            guest.save()
+
     context = {
-        'favorite_restaurants': favorite_restaurants,
+        'lovedPlaces': guest.favorite_restaurants.all(),
+        'apiKey': os.getenv('GMAPS_API_KEY'),
+        'port': 443,
     }
+
     return render(request, "foodFinder/favorites.html", context)
 
 

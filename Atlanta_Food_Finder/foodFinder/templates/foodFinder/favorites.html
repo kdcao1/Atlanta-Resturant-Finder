@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark" style="scrollbar-width: none; overflow-y: hidden">
 {% load static %}
 <head>
     <meta charset="utf-8">
@@ -9,84 +9,266 @@
     <link rel="shortcut icon" type="image/png" href="{% static 'images/favicon.ico' %}" >
 </head>
 <body>
-<nav class="navbar is-fixed-top" role="navigation" aria-label="main navigation">
-    <div class="navbar-brand">
-        <strong class="is-size-2 has-text-centered px-4">
-            Atlanta Food Finder
-        </strong>
-    </div>
+<section class="hero is-fullheight">
+    <div class="hero-head">
+        <nav class="navbar is-fixed-top" role="navigation" aria-label="main navigation">
+            <div class="navbar-brand">
+                <strong class="is-size-2 has-text-centered px-4">
+                    Atlanta Food Finder
+                </strong>
+            </div>
 
-    <div class="navbar-menu">
-        <div class="navbar-start">
-            <a class="navbar-item" href="/foodFinder">
-                Home
-            </a>
-            <a class="navbar-item" href="/foodFinder/favorites">
-                Favorites
-            </a>
-        </div>
-        <div class="navbar-end">
-            {% if user.is_authenticated %}
-                <figure class="image is-64x64 pt-2 pr-3">
-                    <a href="{% url 'settings' %}">
-                        <img class="is-rounded is-square"
-                             src="{% if user.guest.profile_picture %}{{ user.guest.profile_picture.url }}{% else %}{% static 'images/default_profile.png' %}{% endif %}"
-                             alt="Profile Picture"/>
+            <div class="navbar-menu">
+                <div class="navbar-start">
+                    <a class="navbar-item" href="/foodFinder">
+                        Home
                     </a>
-                </figure>
-            {% else %}
-                <figure class="image is-64x64 pt-2 pr-3">
-                    <a href="{% url 'settings' %}">
-                        <img class="is-rounded is-square"
-                             src="{% static 'images/default_profile.png' %}"
-                             alt="Guest Profile Picture"/>
+
+                    <a class="navbar-item" href="/foodFinder/favorites">
+                        Favorites
                     </a>
-                </figure>
-            {% endif %}
+                </div>
+                <div class="navbar-end">
+                    {% if user.is_authenticated %}
+                        <figure class="image is-64x64 pt-2 pr-3">
+                            <a href="{% url 'settings' %}">
+                                <img class="is-rounded is-square"
+                                     src="{% if user.guest.profile_picture %}{{ user.guest.profile_picture.url }}{% else %}{% static 'images/default_profile.png' %}{% endif %}"
+                                     alt="Profile Picture"/>
+                            </a>
+                        </figure>
+                    {% else %}
+                        <figure class="image is-64x64 pt-2 pr-3">
+                            <a href="{% url 'settings' %}">
+                                <img class="is-rounded is-square"
+                                     src="{% static 'images/default_profile.png' %}"
+                                     alt="Guest Profile Picture"/>
+                            </a>
+                        </figure>
+                    {% endif %}
+                </div>
+            </div>
+        </nav>
+    </div>
+    <div class="hero-body">
+        <div class="container is-fluid mt-4" style="height: 85vh;">
+            <div id="restaurant-cards" class='card-container' style="scrollbar-width: none;"></div>
         </div>
     </div>
-</nav>
-
-<section class="section mt-3">
-    <div class="container">
-        <h1 class="title">Favorite Restaurants</h1>
-        <button id="clear-favorites">Clear Favorites</button>
-        <div id="favorite-cards" class="card-container"></div>
+    <div class="hero-foot">
+        <footer class="footer">
+            <div class="has-text-centered">
+                <strong>Atlanta Food Finder</strong> by <a href="/">Team 55</a>.
+            </div>
+        </footer>
     </div>
 </section>
 
+<script
+        src="https://maps.googleapis.com/maps/api/js?key={{ apiKey }}&loading=async&libraries=maps,marker&v=beta" defer>
+</script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const favorites = JSON.parse(localStorage.getItem('favoriteRestaurants')) || [];
-        const container = document.getElementById('favorite-cards');
+    // Function to fetch initial data from Flask server
+    function fetchInitialData() {
+        fetch('http://127.0.0.1:'+{{ port }}+'/initial')
+            .then(response => response.json())
+            .then(data => {
+                displayRestaurants(data.places);
+            })
+            .catch(error => console.error('Error fetching initial data:', error));
+    }
 
-        if (favorites.length === 0) {
-            container.innerHTML = '<p>No favorite restaurants added.</p>';
-            return;
+    function openModal($el) {
+        $el.classList.add('is-active');
+    }
+
+    function closeModal($el) {
+        $el.classList.remove('is-active');
+    }
+
+    function closeAllModals() {
+        (document.querySelectorAll('.modal') || []).forEach(($modal) => {
+            closeModal($modal);
+        });
+    }
+
+    document.addEventListener('keydown', (event) => {
+        if(event.key === "Escape") {
+            closeAllModals();
         }
+    });
 
-        favorites.forEach(name => {
-            if (typeof name === 'string' && name.trim() !== '') {
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.innerHTML = `
-        <div class='card-content'>
-            <h2>${name}</h2>
-            <div class='is-size-2'>
-                <img src="{% static 'images/heart-filled-new.png' %}" alt="Favorite Icon" style="width: 40px; height: 40px;">
+    // Function to display restaurants as cards
+    function displayRestaurants(places) {
+        const container = document.getElementById('restaurant-cards');
+        container.className = 'mt-2'
+        container.innerHTML = ''; // Clear existing content
+        container.style.height = 'calc(85vh - 30px)'; // Set the height
+        container.style.overflowY = 'scroll'; // Allow vertical scrolling
+
+        places.forEach(place => {
+            const loved = isLoved(place.id)
+            if (loved) {
+            const card = document.createElement('div');
+            card.className = 'card mx-2';
+
+            function createStarRating(rating) {
+                let starsHTML = '';
+                for (let i = 1; i <= place.rating; i++) { // Assuming a maximum of 5 stars
+                    starsHTML += `<span class="star ${i <= rating ? 'filled' : ''}">&#9733;</span>`; // Unicode star character
+                }
+                return starsHTML; // Return the generated star HTML
+            }
+            function createPriceRating(priceLevel) {
+                let priceHTML = '';
+                for (let i = 0; i < place.price_level; i++) {
+                    priceHTML += '$'; // Append dollar signs based on price level
+                }
+                return priceHTML; // Return the generated dollar signs HTML
+            }
+            function checkOpenStatus(place) {
+                // Check if the open_now property exists and is true or false
+                if (place.status.open_now) {
+                    return "Open"; // If true, return "Open"
+                } else {
+                    return "Closed"; // If false, return "Closed"
+                }
+            }
+
+            card.innerHTML = `
+            <div class='card-content is-flex is-flex-direction-row is-justify-content-space-between mx-2'>
+                <div class='is-size-2'>
+                    <strong>${place.name}</strong>
+                    <p class="is-size-6">${place.editorial_summary}</p>
+                    <div class="is-size-5">${createStarRating(place.rating)} ${createPriceRating(place.price_level)} ${checkOpenStatus(place)}</div>
+                    <p class="is-size-6">${place.address}</p>
+                </div>
+                <form method="post">
+                    {% csrf_token %}
+                        <input type="hidden" name="placeId" value="${place.id}">
+                        <button type="submit" name="action" value="${loved ? 'unfavorite' : 'favorite'}" class='is-size-2'>
+                            <img src="{% static 'images/heart-unfilled-new.png' %}" alt="Heart Icon" style="width: 40px; height: 40px;">
+                        </button>
+                </form>
             </div>
-        </div>
-        `;
-                container.appendChild(card);
+            <footer class="card-footer">
+                <button class="card-footer-item" data-target="modal-${place.id}">More</button>
+            </footer>
+            <div class="modal" id="modal-${place.id}">
+              <div class="modal-background"></div>
+              <div class="modal-card" style="width: 80vh; height: 80vh;">
+                <header class="modal-card-head">
+                  <p class="modal-card-title"><strong>${place.name}</strong></p>
+                  <button class="delete" aria-label="close"></button>
+                </header>
+                <section class="modal-card-body is-flex is-flex-direction-row is-justify-content-space-between">
+                <div class='columns' style="width: 100%;">
+                    <div class="column is-half">
+                          <div class='is-size-2'>
+                            <p class="is-size-6">${place.editorial_summary}</p>
+                            <div class="is-size-5">${createStarRating(place.rating)} ${createPriceRating(place.price_level)} ${checkOpenStatus(place)}</div>
+                            <p class="is-size-6">${place.address}</p>
+                            <p class="is-size-6">${place.phone_number}</p>
+                        </div>
+                    </div>
+                    <div class="column is-half">
+                        <gmp-map style="height:80%; width:100%;" map-id="1c12e499c0237ede" center="${place.coords.location.lat},${place.coords.location.lng}" zoom="18">
+                        </gmp-map>
+                    </div>
+                </div>
+                </section>
+                    <footer class="modal-card-foot">
+                        <a class="button" href="${place.website}">Website</a>
+                    </footer>
+              </div>
+            </div>
+        `
+            container.appendChild(card);
+            const heartButton = card.querySelector('button[type="submit"] img');
+            if (heartButton) {
+                heartButton.src = loved ? "{% static 'images/heart-filled-new.png' %}" : "{% static 'images/heart-unfilled-new.png' %}";
+            } else {
+                console.error("Heart button image element not found for place:", place.name);
+            }
             }
         });
+    }
+
+    const lovedRestaurants = [
+        {% for place in lovedPlaces %}
+            "{{ place.placeId }}"{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ];
+
+    function isLoved(placeId) {
+        return lovedRestaurants.includes(placeId)
+    }
+
+    function updateHeartIcon(restaurantName, isFavorited) {
+        const heartIcon = document.querySelector(`.heart-icon[data-restaurant="${restaurantName}"]`);
+        if (heartIcon) {
+            heartIcon.src = isFavorited ? "{% static 'images/heart-filled-new.png' %}" : "{% static 'images/heart-unfilled-new.png' %}";
+        }
+    }
+
+    document.getElementById('restaurant-cards').addEventListener('click', (event) => {
+        // Check if the clicked element is the one you want
+        if (event.target.classList.contains('card-footer-item')) {
+            const modalId = event.target.dataset.target; // Get the modal ID from the data attribute
+            const $targetModal = document.getElementById(modalId); // Find the modal by ID
+            if ($targetModal) {
+                openModal($targetModal); // Open the modal
+            }
+        }
     });
 
-    document.getElementById('clear-favorites').addEventListener('click', function() {
-        localStorage.removeItem('favoriteRestaurants');
-        alert('Favorites cleared!');
-        location.reload();  // Reload the page to see the changes
+
+
+    document.getElementById('restaurant-cards').addEventListener('click', (event) => {
+        // Check if the clicked element is a close button
+        if (event.target.classList.contains('delete') || event.target.classList.contains('close-modal')) {
+            const $modal = event.target.closest('.modal'); // Find the closest modal element
+
+            if ($modal) {
+                closeModal($modal); // Close the modal
+            }
+        }
     });
+
+    // Call function to fetch initial data on page load
+    document.addEventListener('DOMContentLoaded', fetchInitialData);
+
+    function addFavoriteIconsToCards() {
+        const restaurantCards = document.querySelectorAll('.restaurant-card');
+
+        restaurantCards.forEach(card => {
+            // Create a new div for the favorite button
+            const favoriteButton = document.createElement('div');
+            favoriteButton.className = 'favorite-button';
+
+            // Create an img element for the heart icon
+            const heartIcon = document.createElement('img');
+            heartIcon.src = "/static/images/heart-unfilled-new.png";
+            heartIcon.alt = "Favorite";
+            heartIcon.className = "heart-icon";
+
+            // Append the heart icon to the favorite button div
+            favoriteButton.appendChild(heartIcon);
+
+            // Append the favorite button div to the restaurant card
+            card.appendChild(favoriteButton);
+
+            // Add event listener for toggling the favorite icon
+            favoriteButton.addEventListener('click', function () {
+                if (heartIcon.src.includes('heart-unfilled-new.png')) {
+                    heartIcon.src = "/static/images/heart-filled-new.png";
+                } else {
+                    heartIcon.src = "/static/images/heart-unfilled-new.png";
+                }
+            });
+        });
+    }
 </script>
+
 </body>
 </html>

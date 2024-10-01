@@ -234,6 +234,7 @@ function displayRestaurants(places) {
         }
         const loved = isLoved(place.id)
         if (loved) {console.log(place.name + loved)}
+
         card.innerHTML = `
             <div class='card-content is-flex is-flex-direction-row is-justify-content-space-between mx-2'>
                 <div class='is-size-2'>
@@ -242,23 +243,13 @@ function displayRestaurants(places) {
                     <div class="is-size-5">${createStarRating(place.rating)} ${createPriceRating(place.price_level)} ${checkOpenStatus(place)}</div>
                     <p class="is-size-6">${place.address}</p>
                 </div>
-                {% if loved %}
-                    <form method="post">
+                <form method="post">
                     {% csrf_token %}
                         <input type="hidden" name="placeId" value="${place.id}">
-                        <button type="submit" name="action" value="unfavorite" class='is-size-2'">
-                            <img src="{% static 'images/heart-filled-new.png' %}" alt="Heart Icon" style="width: 40px; height: 40px;">
-                        </button>
-                    </form>
-                {% else %}
-                    <form method="post">
-                    {% csrf_token %}
-                        <input type="hidden" name="placeId" value="${place.id}">
-                        <button type="submit" name="action" value="favorite" class='is-size-2'">
+                        <button type="submit" name="action" value="${loved ? 'unfavorite' : 'favorite'}" class='is-size-2'>
                             <img src="{% static 'images/heart-unfilled-new.png' %}" alt="Heart Icon" style="width: 40px; height: 40px;">
                         </button>
-                    </form>
-                {% endif %}
+                </form>
             </div>
             <footer class="card-footer">
                 <button class="card-footer-item" data-target="modal-${place.id}">More</button>
@@ -293,6 +284,12 @@ function displayRestaurants(places) {
             </div>
         `
         container.appendChild(card);
+        const heartButton = card.querySelector('button[type="submit"] img');
+        if (heartButton) {
+            heartButton.src = loved ? "{% static 'images/heart-filled-new.png' %}" : "{% static 'images/heart-unfilled-new.png' %}";
+        } else {
+            console.error("Heart button image element not found for place:", place.name);
+        }
     });
 }
 
