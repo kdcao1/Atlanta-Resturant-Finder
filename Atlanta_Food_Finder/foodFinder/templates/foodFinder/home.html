@@ -303,13 +303,6 @@ function isLoved(placeId) {
     return lovedRestaurants.includes(placeId)
 }
 
-function updateHeartIcon(restaurantName, isFavorited) {
-    const heartIcon = document.querySelector(`.heart-icon[data-restaurant="${restaurantName}"]`);
-    if (heartIcon) {
-        heartIcon.src = isFavorited ? "{% static 'images/heart-filled-new.png' %}" : "{% static 'images/heart-unfilled-new.png' %}";
-    }
-}
-
 document.getElementById('restaurant-cards').addEventListener('click', (event) => {
     // Check if the clicked element is the one you want
     if (event.target.classList.contains('card-footer-item')) {
@@ -374,36 +367,6 @@ document.getElementById('distanceFilter').addEventListener('change', function() 
 // Call function to fetch initial data on page load
 document.addEventListener('DOMContentLoaded', fetchInitialData);
 
-function addFavoriteIconsToCards() {
-    const restaurantCards = document.querySelectorAll('.restaurant-card');
-
-    restaurantCards.forEach(card => {
-        // Create a new div for the favorite button
-        const favoriteButton = document.createElement('div');
-        favoriteButton.className = 'favorite-button';
-
-        // Create an img element for the heart icon
-        const heartIcon = document.createElement('img');
-        heartIcon.src = "/static/images/heart-unfilled-new.png";
-        heartIcon.alt = "Favorite";
-        heartIcon.className = "heart-icon";
-
-        // Append the heart icon to the favorite button div
-        favoriteButton.appendChild(heartIcon);
-
-        // Append the favorite button div to the restaurant card
-        card.appendChild(favoriteButton);
-
-        // Add event listener for toggling the favorite icon
-        favoriteButton.addEventListener('click', function () {
-            if (heartIcon.src.includes('heart-unfilled-new.png')) {
-                heartIcon.src = "/static/images/heart-filled-new.png";
-            } else {
-                heartIcon.src = "/static/images/heart-unfilled-new.png";
-            }
-        });
-    });
-}
 </script>
 
 </body>

@@ -42,13 +42,10 @@ def home(request):
             guest.favorite_restaurants.remove(restaurant)
             guest.save()
 
-    favorite_restaurant_ids = request.user.guest.favorite_restaurants.values_list('id', flat=True)
-
     context = {
         'lovedPlaces': guest.favorite_restaurants.all(),
         'apiKey': os.getenv('GMAPS_API_KEY'),
         'port': 443,
-        'favorite_restaurant_ids': favorite_restaurant_ids,
     }
     return render(request, "foodFinder/home.html", context)
 
@@ -83,6 +80,7 @@ def register(request):
                 return redirect('login')
         else:
             messages.error(request, 'Passwords do not match.')
+
     return render(request, 'foodFinder/register.html')
 
 
@@ -122,17 +120,6 @@ def favorites(request):
         return redirect('/foodFinder/login/')
 
     guest = Guest.objects.get(user=request.user)
-
-    if request.POST.get('action') == 'favorite':
-        print('loved')
-        placeId = request.POST.get('placeId')
-        form = Favorite(request.POST)
-        if form.is_valid():
-            restaurant = Restaurant.objects.get_or_create(
-                placeId=placeId,
-            )
-            guest.favorite_restaurants.add(restaurant)
-            guest.save()
 
     if request.POST.get('action') == 'unfavorite':
         print('unloved')
