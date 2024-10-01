@@ -7,6 +7,17 @@
     <title>Atlanta Food Finder</title>
     <link rel="stylesheet" href="{% static "./foodFinder/css/bulma.css" %}">
     <link rel="shortcut icon" type="image/png" href="{% static 'images/favicon.ico' %}" >
+    <style>
+        .logo-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .logo {
+            width: 24px;
+            height: 24px;
+        }
+    </style>
 </head>
 <body>
 <section class="hero is-fullheight">
@@ -200,6 +211,67 @@ function displayRestaurants(places) {
             }
         }
 
+        const attributes = [
+            { name: 'beer', checkFunction: checkBeer, logo: '<img class="logo" src="{% static 'images/restaurantInfo/beer.svg' %}"' },
+            { name: 'breakfast', checkFunction: checkBreakfast, logo: '<img class="logo" src="{% static 'images/restaurantInfo/breakfast.png' %}"' },
+            { name: 'curbsidePickup', checkFunction: checkCurbsidePickup, logo: '<img class="logo" src="{% static 'images/restaurantInfo/curbsidePickup.png' %}"' },
+            { name: 'delivery', checkFunction: checkDelivery, logo: '<img class="logo" src="{% static 'images/restaurantInfo/delivery.svg' %}"' },
+            { name: 'dineIn', checkFunction: checkDineIn, logo: '<img class="logo" src="{% static 'images/restaurantInfo/dineIn.png' %}"' },
+            { name: 'dinner', checkFunction: checkDinner, logo: '<img class="logo" src="{% static 'images/restaurantInfo/dinner.png' %}"' },
+            { name: 'lunch', checkFunction: checkLunch, logo: '<img class="logo" src="{% static 'images/restaurantInfo/lunch.png' %}"' },
+            { name: 'reservable', checkFunction: checkReservable, logo: '<img class="logo" src="{% static 'images/restaurantInfo/reservable.png' %}"' },
+            { name: 'takeout', checkFunction: checkTakeout, logo: '<img class="logo" src="{% static 'images/restaurantInfo/takeout.svg' %}"' },
+            { name: 'vegetarian', checkFunction: checkVegetarian, logo: '<img class="logo" src="{% static 'images/restaurantInfo/vegetarian.svg' %}"' },
+            { name: 'wine', checkFunction: checkWine, logo: '<img class="logo" src="{% static 'images/restaurantInfo/wine.svg' %}"' },
+        ]
+
+        function checkBeer(place) {
+            return (place.serves_beer);
+        }
+        function checkBreakfast(place) {
+            return (place.serves_breakfast);
+        }
+        function checkCurbsidePickup(place) {
+            return (place.curbside_pickup);
+        }
+        function checkDelivery(place) {
+            return (place.delivery);
+        }
+        function checkDineIn(place) {
+            return (place.dine_in);
+        }
+        function checkDinner(place) {
+            return (place.serves_dinner);
+        }
+        function checkLunch(place) {
+            return (place.serves_lunch);
+        }
+        function checkReservable(place) {
+            return (place.reservable);
+        }
+        function checkTakeout(place) {
+            return (place.takeout);
+        }
+        function checkVegetarian(place) {
+            return (place.serves_vegetarian_food);
+        }
+        function checkWine(place) {
+            return (place.serves_wine);
+        }
+
+        const logoContainer = document.getElementById('logoContainer');
+        function displayLogos() {
+            attributes.forEach(attr => {
+                if (attr.checkFunction()) {
+                    const logoDiv = document.createElement('div');
+                    logoDiv.innerHTML = attr.logo;
+                    logoContainer.appendChild(logoDiv);
+                }
+            });
+        }
+
+        //window.onload = displayLogos;
+
         card.innerHTML = `
             <div class='card-content is-flex is-flex-direction-row is-justify-content-space-between mx-2'>
                 <div class='is-size-2'>
@@ -207,6 +279,7 @@ function displayRestaurants(places) {
                     <p class="is-size-6">${place.editorial_summary}</p>
                     <div class="is-size-5">${createStarRating(place.rating)} ${createPriceRating(place.price_level)} ${checkOpenStatus(place)}</div>
                     <p class="is-size-6">${place.address}</p>
+                    <div id="logoContainer" class="logo-container"></div>
                 </div>
                 <div class='is-size-2' onclick="toggleFavorite(this)">
                     <img class="heart-icon" src="{% static 'images/heart-unfilled.png' %}" alt="Heart Icon" style="width: 40px; height: 40px;" onclick="toggleFavorite(this)">
@@ -230,6 +303,7 @@ function displayRestaurants(places) {
                             <div class="is-size-5">${createStarRating(place.rating)} ${createPriceRating(place.price_level)} ${checkOpenStatus(place)}</div>
                             <p class="is-size-6">${place.address}</p>
                             <p class="is-size-6">${place.phone_number}</p>
+                            <div id="logoContainer" class="logo-container"></div>
                         </div>
                     </div>
                     <div class="column is-half">
