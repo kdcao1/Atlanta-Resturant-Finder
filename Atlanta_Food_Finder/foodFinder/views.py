@@ -9,18 +9,22 @@ from django.http import JsonResponse
 from django.core.mail import send_mail
 from django.utils.crypto import get_random_string
 from django.shortcuts import get_object_or_404
+from .models import UserProfile
 import os
 from dotenv import load_dotenv
 load_dotenv()
+
 
 
 def home(request):
     if not request.user.is_authenticated:
         return redirect('/foodFinder/login/')
     else:
+        favorite_restaurant_ids = request.user.guest.favorite_restaurants.values_list('id', flat=True)
         context = {
             'apiKey': os.getenv('GMAPS_API_KEY'),
-            'port': 443
+            'port': 443,
+            'favorite_restaurant_ids': favorite_restaurant_ids,
         }
         return render(request, "foodFinder/home.html", context)
 
@@ -65,7 +69,7 @@ def logins(request):
         password = request.POST.get('password')
 
         # Authenticate the user with the provided username and password
-        user = authenticate(username=username, password=password)
+        user = authenticate(request, username=username, password=password)
 
         if user is None:
             # Display an error message if authentication fails (invalid password)
@@ -75,13 +79,23 @@ def logins(request):
             # Log in the user and redirect to the home page upon successful login
             print("Good Login")
             login(request, user)
-            return redirect('/foodFinder')
+
+            try:
+                user_profile = UserProfile.objects.get(user=user)
+                return redirect('/foodFinder')  # Redirect to the desired URL with UserProfile
+            except UserProfile.DoesNotExist:
+                # Handle case where UserProfile does not exist
+                # Redirect to a different page or create a UserProfile here if needed
+                return redirect('/create-profile')  # Example redirect to profile creation page
+
     context = {
         "login_error": login_error
     }
     return render(request, "foodFinder/login.html", context)
 
 
+
+@login_required
 def favorites(request):
     favorite_restaurants = request.user.guest.favorite_restaurants.all() if request.user.is_authenticated else []
     context = {
@@ -103,9 +117,11 @@ def favorite_restaurant(request, restaurant_id):
         return JsonResponse({'is_favorited': is_favorited})
     return JsonResponse({'error': 'User not authenticated'}, status=403)
 
+
 @login_required
 def settings(request):
     guest = Guest.objects.get(user=request.user)
+    user_profile = UserProfile.objects.get(user=request.user)
 
     if request.method == "POST":
         form = ProfileForm(request.POST, request.FILES, instance=guest)
@@ -113,6 +129,7 @@ def settings(request):
         cropped_image_data = request.POST.get('cropped_image_data', None)
 
         if form.is_valid():
+            # Handle profile picture cropping
             if cropped_image_data:
                 from django.core.files.base import ContentFile
                 import base64
@@ -122,16 +139,35 @@ def settings(request):
                 data = ContentFile(base64.b64decode(imgstr), name=f'{guest.user.username}_profile.{ext}')
 
                 guest.profile_picture = data
-                guest.save()
 
-            form.save()
-            return redirect('settings')
+            # Save guest profile and user details
+            guest = form.save()
+
+            user_profile.email = request.POST.get('email', user_profile.email)
+            user_profile.location = request.POST.get('location', user_profile.location)
+            user_profile.bio = request.POST.get('bio', user_profile.bio)
+            user_profile.first_name = request.POST.get('first_name', user_profile.first_name)
+            user_profile.last_name = request.POST.get('last_name', user_profile.last_name)
+
+            # Handle profile picture upload if provided
+            profile_picture = request.FILES.get('profile_picture')
+            if profile_picture:
+                user_profile.profile_picture = profile_picture
+
+            user_profile.user.save()
+            user_profile.save()  # Save user profile changes
+            guest.save()  # Save guest profile changes
+            return redirect('settings')  # Redirect to the settings page or another page after saving
     else:
         form = ProfileForm(instance=guest)
 
     context = {
         'form': form,
         'guest': guest,
+        'user': user_profile.user,
+        'email': user_profile.email,
+        'location': user_profile.location,
+        'bio': user_profile.bio,
     }
     return render(request, 'foodFinder/settings.html', context)
 
