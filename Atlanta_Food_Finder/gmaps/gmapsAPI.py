@@ -14,7 +14,7 @@ CORS(app)
 
 import math
 
-setPort = 443
+setPort = os.getenv('PORT')
 
 def calculate_distance(lat1, lon1, lat2, lon2):
     lat1, lon1, lat2, lon2 = map(math.radians, [lat1, lon1, lat2, lon2])

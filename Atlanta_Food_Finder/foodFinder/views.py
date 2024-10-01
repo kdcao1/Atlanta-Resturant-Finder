@@ -13,7 +13,7 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
-port = 443
+port = os.getenv('PORT')
 
 def home(request):
     if not request.user.is_authenticated:
