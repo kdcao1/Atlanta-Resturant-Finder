@@ -113,7 +113,7 @@
 <script>
 // Function to fetch initial data from Flask server
 function fetchInitialData() {
-    fetch('http://127.0.0.1:'+{{port}}+'/initial')
+    fetch('http://127.0.0.1:'+{{ port }}+'/initial')
         .then(response => response.json())
         .then(data => {
             displayRestaurants(data.places);
@@ -123,7 +123,7 @@ function fetchInitialData() {
 
 // Function to search for restaurants based on user input
 function searchRestaurants(keyword) {
-    fetch('http://127.0.0.1:'+{{port}}+'/search', {
+    fetch('http://127.0.0.1:'+{{ port }}+'/search', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -210,10 +210,6 @@ function displayRestaurants(places) {
         const card = document.createElement('div');
         card.className = 'card mx-2';
 
-        const heartIconSrc = favoriteRestaurants.includes(place.name) ?
-            "{% static 'images/heart-filled-new.png' %}" :
-            "{% static 'images/heart-unfilled-new.png' %}";
-
         function createStarRating(rating) {
             let starsHTML = '';
             for (let i = 1; i <= place.rating; i++) { // Assuming a maximum of 5 stars
@@ -236,7 +232,8 @@ function displayRestaurants(places) {
                 return "Closed"; // If false, return "Closed"
             }
         }
-
+        const loved = isLoved(place.id)
+        if (loved) {console.log(place.name + loved)}
         card.innerHTML = `
             <div class='card-content is-flex is-flex-direction-row is-justify-content-space-between mx-2'>
                 <div class='is-size-2'>
@@ -245,9 +242,23 @@ function displayRestaurants(places) {
                     <div class="is-size-5">${createStarRating(place.rating)} ${createPriceRating(place.price_level)} ${checkOpenStatus(place)}</div>
                     <p class="is-size-6">${place.address}</p>
                 </div>
-                <div class='is-size-2' onclick="toggleFavorite(this)">
-                    <img class="heart-icon" src="${heartIconSrc}" alt="Heart Icon" style="width: 40px; height: 40px;" data-restaurant="${place.name}">
-                </div>
+                {% if loved %}
+                    <form method="post">
+                    {% csrf_token %}
+                        <input type="hidden" name="placeId" value="${place.id}">
+                        <button type="submit" name="action" value="unfavorite" class='is-size-2'">
+                            <img src="{% static 'images/heart-filled-new.png' %}" alt="Heart Icon" style="width: 40px; height: 40px;">
+                        </button>
+                    </form>
+                {% else %}
+                    <form method="post">
+                    {% csrf_token %}
+                        <input type="hidden" name="placeId" value="${place.id}">
+                        <button type="submit" name="action" value="favorite" class='is-size-2'">
+                            <img src="{% static 'images/heart-unfilled-new.png' %}" alt="Heart Icon" style="width: 40px; height: 40px;">
+                        </button>
+                    </form>
+                {% endif %}
             </div>
             <footer class="card-footer">
                 <button class="card-footer-item" data-target="modal-${place.id}">More</button>
@@ -280,27 +291,19 @@ function displayRestaurants(places) {
                     </footer>
               </div>
             </div>
-        `;
+        `
         container.appendChild(card);
     });
 }
 
-// Get the existing favorites from local storage
-let favoriteRestaurants = JSON.parse(localStorage.getItem('favoriteRestaurants')) || [];
+const lovedRestaurants = [
+    {% for place in lovedPlaces %}
+        "{{ place.placeId }}"{% if not forloop.last %},{% endif %}
+    {% endfor %}
+];
 
-// Function to update the heart icon and local storage
-function toggleFavorite(element) {
-    const restaurantName = element.closest('.card').querySelector('.is-size-2 strong').textContent;
-    const isFavorited = favoriteRestaurants.includes(restaurantName);
-
-    if (isFavorited) {
-        favoriteRestaurants = favoriteRestaurants.filter(name => name !== restaurantName);
-    } else {
-        favoriteRestaurants.push(restaurantName);
-    }
-
-    localStorage.setItem('favoriteRestaurants', JSON.stringify(favoriteRestaurants));
-    updateHeartIcon(restaurantName, !isFavorited);
+function isLoved(placeId) {
+    return lovedRestaurants.includes(placeId)
 }
 
 function updateHeartIcon(restaurantName, isFavorited) {
@@ -309,17 +312,6 @@ function updateHeartIcon(restaurantName, isFavorited) {
         heartIcon.src = isFavorited ? "{% static 'images/heart-filled-new.png' %}" : "{% static 'images/heart-unfilled-new.png' %}";
     }
 }
-
-
-
-// On page load, check local storage and update the UI accordingly
-document.addEventListener('DOMContentLoaded', () => {
-    favoriteRestaurants.forEach(restaurantName => {
-        updateHeartIcon(restaurantName, true);
-    });
-    fetchInitialData();
-});
-
 
 document.getElementById('restaurant-cards').addEventListener('click', (event) => {
     // Check if the clicked element is the one you want
@@ -415,28 +407,6 @@ function addFavoriteIconsToCards() {
         });
     });
 }
-
-// Call this function after the cards are generated by the Google API
-googleApiCallCompletedCallback = function() {
-    addFavoriteIconsToCards();
-};
-
-document.addEventListener('DOMContentLoaded', function () {
-    const favoriteButtons = document.querySelectorAll('.favorite-button');
-
-    favoriteButtons.forEach(button => {
-        button.addEventListener('click', function () {
-            const icon = this.querySelector('img');
-
-            // Toggle between favorite/unfavorite
-            if (icon.src.includes('heart-unfilled-new.png')) {
-                icon.src = "{% static 'images/heart-filled.png' %}";
-            } else {
-                icon.src = "{% static 'images/heart-unfilled-new.png' %}";
-            }
-        });
-    });
-});
 </script>
 
 </body>

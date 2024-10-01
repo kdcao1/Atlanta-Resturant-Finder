@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.views.decorators.http import require_POST
-from .forms import ProfileForm
+from .forms import ProfileForm, Favorite
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -19,14 +19,39 @@ load_dotenv()
 def home(request):
     if not request.user.is_authenticated:
         return redirect('/foodFinder/login/')
-    else:
-        favorite_restaurant_ids = request.user.guest.favorite_restaurants.values_list('id', flat=True)
-        context = {
-            'apiKey': os.getenv('GMAPS_API_KEY'),
-            'port': 443,
-            'favorite_restaurant_ids': favorite_restaurant_ids,
-        }
-        return render(request, "foodFinder/home.html", context)
+
+    guest = Guest.objects.get(user=request.user)
+
+    if request.POST.get('action') == 'favorite':
+        print('loved')
+        placeId = request.POST.get('placeId')
+        form = Favorite(request.POST)
+        if form.is_valid():
+            restaurant = Restaurant.objects.get_or_create(
+                placeId=placeId,
+            )
+            restaurant = Restaurant.objects.get(placeId=placeId)
+            guest.favorite_restaurants.add(restaurant)
+            guest.save()
+
+    if request.POST.get('action') == 'unfavorite':
+        print('unloved')
+        placeId = request.POST.get('placeId')
+        form = Favorite(request.POST)
+        if form.is_valid():
+            restaurant = Restaurant.objects.get(id=placeId)
+            guest.favorite_restaurants.remove(restaurant)
+            guest.save()
+
+    favorite_restaurant_ids = request.user.guest.favorite_restaurants.values_list('id', flat=True)
+
+    context = {
+        'lovedPlaces': guest.favorite_restaurants.all(),
+        'apiKey': os.getenv('GMAPS_API_KEY'),
+        'port': 443,
+        'favorite_restaurant_ids': favorite_restaurant_ids,
+    }
+    return render(request, "foodFinder/home.html", context)
 
 
 def register(request):
@@ -120,19 +145,29 @@ def favorite_restaurant(request, restaurant_id):
 def settings(request):
     if not request.user.is_authenticated:
         return redirect('/foodFinder/login/')
+
     guest = Guest.objects.get(user=request.user)
     user_profile = UserProfile.objects.get(user=request.user)
+    can_edit = False
 
     if request.method == "POST":
         if request.POST.get('action') == 'logout':
             logout(request)
             print('Logged Out')
             return redirect('/foodFinder/login')
-        form = ProfileForm(request.POST, request.FILES, instance=guest)
 
+        if request.POST.get('action') == 'edit':
+            can_edit = True
+
+        if request.POST.get('action') == 'cancel':
+            return redirect('/foodFinder/settings')
+
+        form = ProfileForm(request.POST, request.FILES, instance=user_profile)
         cropped_image_data = request.POST.get('cropped_image_data', None)
 
-        if form.is_valid():
+        if form.is_valid() and not request.POST.get('action') == 'edit':
+
+            print("submitted")
             # Handle profile picture cropping
             if cropped_image_data:
                 from django.core.files.base import ContentFile
@@ -145,33 +180,25 @@ def settings(request):
                 guest.profile_picture = data
 
             # Save guest profile and user details
-            guest = form.save()
-
-            user_profile.email = request.POST.get('email', user_profile.email)
-            user_profile.location = request.POST.get('location', user_profile.location)
-            user_profile.bio = request.POST.get('bio', user_profile.bio)
-            user_profile.first_name = request.POST.get('first_name', user_profile.first_name)
-            user_profile.last_name = request.POST.get('last_name', user_profile.last_name)
+            guest.user.email = request.POST.get('email', guest.user.email)
+            guest.user.username = request.POST.get('username', guest.user.username)
+            guest.location = request.POST.get('location', guest.location)
+            guest.first_name = request.POST.get('first_name',guest.first_name)
+            guest.last_name = request.POST.get('last_name', guest.last_name)
 
             # Handle profile picture upload if provided
             profile_picture = request.FILES.get('profile_picture')
             if profile_picture:
                 user_profile.profile_picture = profile_picture
 
-            user_profile.user.save()
-            user_profile.save()  # Save user profile changes
+            guest.user.save()
             guest.save()  # Save guest profile changes
-            return redirect('settings')  # Redirect to the settings page or another page after saving
-    else:
-        form = ProfileForm(instance=guest)
 
     context = {
-        'form': form,
         'guest': guest,
         'user': user_profile.user,
         'email': user_profile.email,
-        'location': user_profile.location,
-        'bio': user_profile.bio,
+        'can_edit': can_edit,
     }
     return render(request, 'foodFinder/settings.html', context)
 

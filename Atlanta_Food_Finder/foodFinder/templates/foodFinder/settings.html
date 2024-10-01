@@ -58,12 +58,22 @@
 <section class="section mt-3">
     <div class="container">
         <h1 class="title">Settings</h1>
-        <form method="POST" enctype="multipart/form-data">
+        <form method="POST" enctype="multipart/form-data" action="{% url 'settings' %}">
             {% csrf_token %}
             <!-- Profile Picture Upload -->
-            <div class="field">
+            {% if not can_edit %}
+                <figure class="image is-96x96 pt-2 pr-3">
+                    <a href="{% url 'settings' %}">
+                        <img class="is-rounded is-square"
+                             src="{% if user.guest.profile_picture %}{{ user.guest.profile_picture.url }}{% else %}{% static 'images/default_profile.png' %}{% endif %}"
+                             alt="Profile Picture"/>
+                    </a>
+                </figure>
+            {% endif %}
+            {% if can_edit %}
+            <div class="field short-input">
                 <label class="label">Upload New Profile Picture</label>
-                <input type="file" id="profilePictureInput" name="profile_picture" accept="image/*" class="input" {% if not can_edit %}disabled{% endif %}>
+                <input type="file" id="profilePictureInput" name="profile_picture" accept="image/*" class="input">
             </div>
 
             <!-- Crop & Adjust Profile Picture -->
@@ -76,7 +86,7 @@
                 </figure>
                 <input type="hidden" name="cropped_image_data" id="croppedImageData">
             </div>
-
+            {% endif %}
             <!-- Show buttons only in Edit Mode -->
             <div id="cropButtons" style="display: none;">
                 <button type="button" id="cropSaveButton" class="button is-success">Save Cropped Photo</button>
@@ -85,41 +95,68 @@
 
             <!-- Additional Settings -->
             <div class="field mt-5">
-                <label class="label">Username</label>
-                <input type="text" name="username" class="input short-input" value="{{ guest.username }}" placeholder="Enter your username" {% if not can_edit %}disabled{% endif %}>
+                {% if not can_edit %}
+                    <div><strong>Username:</strong> {{ guest.user.username }}</div>
+                {% endif %}
+                {% if can_edit %}
+                    <label class="label">Username:</label>
+                    <input type="text" name="username" class="input short-input" value="{{ guest.user.username }}" placeholder="Enter your username">
+                {% endif %}
             </div>
 
             <div class="field mt-5">
-                <label class="label">Email</label>
-                <input type="email" name="email" class="input short-input" value="{{ guest.email }}" placeholder="Enter your email" {% if not can_edit %}disabled{% endif %}>
+                {% if not can_edit %}
+                    <div><strong>Email:</strong> {{ guest.user.email }}</div>
+                {% endif %}
+                {% if can_edit %}
+                    <label class="label">Email:</label>
+                    <input type="email" name="email" class="input short-input" value="{{ guest.user.email }}" placeholder="Enter your email">
+                {% endif %}
             </div>
 
             <div class="field mt-5">
-                <label class="label">Location</label>
-                <input type="text" name="location" class="input short-input" value="{{ guest.location }}" placeholder="Enter your location" {% if not can_edit %}disabled{% endif %}>
+                {% if not can_edit %}
+                    <div><strong>First Name:</strong> {{ guest.first_name }}</div>
+                {% endif %}
+                {% if can_edit %}
+                    <label class="label">First Name:</label>
+                    <input type="text" name="first_name" class="input short-input" value="{{ guest.first_name }}" placeholder="Enter your first name">
+                {% endif %}
+            </div>
+            <div class="field mt-5">
+                {% if not can_edit %}
+                    <div><strong>Last Name:</strong> {{ guest.last_name }}</div>
+                {% endif %}
+                {% if can_edit %}
+                    <label class="label">Last Name:</label>
+                    <input type="text" name="last_name" class="input short-input" value="{{ guest.last_name }}" placeholder="Enter your last name">
+                {% endif %}
             </div>
 
             <div class="field mt-5">
-                <label class="label">Bio</label>
-                <textarea name="bio" class="textarea" placeholder="Tell us about yourself..." {% if not can_edit %}disabled{% endif %}>{{ guest.bio }}</textarea>
-            </div>
-
-            <div class="field mt-5">
-                <label class="label">Change Password</label>
-                <button type="button" class="button is-warning" onclick="location.href='{% url 'password_reset' %}'">Change Password</button>
+                {% if not can_edit %}
+                    <div><strong>Location:</strong> {{ guest.location }}</div>
+                {% endif %}
+                {% if can_edit %}
+                    <label class="label">Location:</label>
+                    <input type="text" name="location" class="input short-input" value="{{ guest.location }}" placeholder="Enter your location">
+                {% endif %}
             </div>
 
             <!-- Move Edit and Save buttons to the bottom -->
             <div class="is-flex is-justify-content-space-between">
-                <button type="button" id="editButton" class="button is-info">Edit</button>
+                {% if can_edit %}
+                    <button name="action" value="cancel" type="submit" id="cancelButton" class="button is-danger">Cancel</button>
+                    <button class="button is-primary" type="submit">Save Changes</button>
+                {% endif %}
+                {% if not can_edit %}
+                    <button name="action" value="edit" type="submit" id="editButton" class="button is-info">Edit</button>
+                {% endif %}
                 <form method="POST">
                     {% csrf_token %}
                     <button type="submit" name="action" value="logout" id="logoutButton" class="button is-danger">Logout</button>
                 </form>
             </div>
-
-            <button type="button" id="cancelButton" class="button is-danger" style="display: none;">Cancel</button>
-            <button class="button is-primary" type="submit" style="display: none;">Save Changes</button>
         </form>
     </div>
 </section>
@@ -130,9 +167,6 @@
     const profileImagePreview = document.getElementById('profileImagePreview');
     const profilePictureInput = document.getElementById('profilePictureInput');
     const croppedImageData = document.getElementById('croppedImageData');
-    const resetButton = document.getElementById('resetButton');
-    const editButton = document.getElementById('editButton');
-    const cancelButton = document.getElementById('cancelButton');
     const saveButton = document.querySelector('button[type="submit"]');
     const cropSaveButton = document.getElementById('cropSaveButton');
     const cropButtons = document.getElementById('cropButtons');
@@ -149,37 +183,11 @@
         });
     };
 
-    //Logout Button
-    document.getElementById('logoutButton').addEventListener('click', function() {
-
-
-    });
-
-    // Edit button click event
-    editButton.addEventListener('click', function () {
-        profilePictureInput.disabled = false;
-        cropButtons.style.display = 'block'; // Show crop buttons
-        editButton.style.display = 'none';
-        cancelButton.style.display = 'inline';
-        saveButton.style.display = 'inline';
-        document.querySelectorAll('input, textarea').forEach(element => {
-            element.disabled = false; // Enable all inputs
-        });
-    });
-
     // Cancel button click event
     cancelButton.addEventListener('click', function () {
         // Revert to original image
         profileImagePreview.src = originalImageSrc;
         cropper.replace(originalImageSrc);
-        profilePictureInput.disabled = true;
-        cropButtons.style.display = 'none'; // Hide crop buttons
-        editButton.style.display = 'inline';
-        cancelButton.style.display = 'none';
-        saveButton.style.display = 'none';
-        document.querySelectorAll('input, textarea').forEach(element => {
-            element.disabled = true; // Disable all inputs
-        });
     });
 
     // Save cropped photo temporarily
@@ -204,11 +212,6 @@
         reader.readAsDataURL(event.target.files[0]);
     });
 
-    // Handle Reset button click
-    resetButton.addEventListener('click', function() {
-        profileImagePreview.src = originalImageSrc; // Reset to the original image
-        cropper.replace(originalImageSrc); // Reset the cropper with the original image
-    });
 
     // Before form submission, convert cropped image to base64 and set hidden input value
     document.querySelector('form').addEventListener('submit', function (event) {
@@ -219,25 +222,6 @@
             });
             croppedImageData.value = croppedCanvas.toDataURL('image/png'); // Convert to base64 and set hidden input value
         }
-    });
-
-    // to handle edit cancel swap
-    document.getElementById('editButton').addEventListener('click', function() {
-        const fields = document.querySelectorAll('.input, .textarea');
-        fields.forEach(field => field.disabled = false);
-        document.getElementById('cropButtons').style.display = 'block';
-        document.getElementById('cancelButton').style.display = 'inline-block';
-        document.querySelector('.button.is-primary').style.display = 'inline-block';
-        this.style.display = 'none';
-    });
-
-    document.getElementById('cancelButton').addEventListener('click', function() {
-        const fields = document.querySelectorAll('.input, .textarea');
-        fields.forEach(field => field.disabled = true);
-        document.getElementById('cropButtons').style.display = 'none';
-        document.getElementById('editButton').style.display = 'inline-block';
-        this.style.display = 'none';
-        document.querySelector('.button.is-primary').style.display = 'none';
     });
 
     function toggleFavorite(element, placeName) {
