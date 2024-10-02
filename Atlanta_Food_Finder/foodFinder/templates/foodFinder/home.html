@@ -416,7 +416,7 @@ function makeReview(placeId) {
     reviewCard.style.marginTop = '1rem'; // Add some margin for spacing
 
     // Set the inner HTML of the review card
-    reviewCard.innerHTML = `
+    reviewCard.innerHTML += `
         <div class="card-content" style="background-color: #2a2a2a; color: #ffffff;">
             <p class="is-size-4">Rating: ${rating} Star${rating > 1 ? 's' : ''}</p>
             <p class="is-size-5">${reviewText}</p>
