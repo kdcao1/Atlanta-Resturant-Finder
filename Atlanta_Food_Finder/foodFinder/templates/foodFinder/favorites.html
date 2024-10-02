@@ -106,6 +106,15 @@
         container.style.height = 'calc(85vh - 30px)'; // Set the height
         container.style.overflowY = 'scroll'; // Allow vertical scrolling
 
+        if (places.length === 0) {
+            // Display a message indicating no favorites
+            const message = document.createElement('div');
+            message.className = 'has-text-centered';
+            message.innerHTML = `<p class="is-size-4">You have no favorite restaurants.</p>`;
+            container.appendChild(message);
+            return; // Exit the function early
+        }
+
         places.forEach(place => {
             const loved = isLoved(place.id)
             if (loved) {
