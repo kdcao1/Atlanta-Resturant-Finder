@@ -142,424 +142,369 @@
         src="https://maps.googleapis.com/maps/api/js?key={{ apiKey }}&loading=async&libraries=maps,marker&v=beta" defer>
 </script>
 <script>
-// Function to fetch initial data from Flask server
-function fetchInitialData() {
-    fetch('http://127.0.0.1:'+{{ port }}+'/initial')
-        .then(response => response.json())
-        .then(data => {
-            displayRestaurants(data.places);
-        })
-        .catch(error => console.error('Error fetching initial data:', error));
-}
-
-// Function to search for restaurants based on user input
-function searchRestaurants(keyword) {
-    fetch('http://127.0.0.1:'+{{ port }}+'/search', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ keyword: keyword }),
-    })
+    // Function to fetch initial data from Flask server
+    function fetchInitialData() {
+        fetch('http://127.0.0.1:'+{{ port }}+'/initial')
     .then(response => response.json())
-    .then(data => {
-        displayRestaurants(data.places);
-    })
-    .catch(error => console.error('Error searching for restaurants:', error));
-}
-
-function sortRestaurants(places, criterion) {
-    switch (criterion) {
-        case 'ratingHigh':
-            return places.sort((a, b) => b.rating - a.rating);
-        case 'ratingLow':
-            return places.sort((a, b) => a.rating - b.rating);
-        case 'distanceNear':
-            return places.sort((a, b) => a.distance - b.distance);
-        case 'distanceFar':
-            return places.sort((a, b) => b.distance - a.distance);
-        default:
-            return places;
+            .then(data => {
+                displayRestaurants(data.places);
+            })
+            .catch(error => console.error('Error fetching initial data:', error));
     }
-}
+
+    // Function to search for restaurants based on user input
+    function searchRestaurants(keyword) {
+        fetch('http://127.0.0.1:'+{{ port }}+'/search', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ keyword: keyword }),
+        })
+    .then(response => response.json())
+            .then(data => {
+                displayRestaurants(data.places);
+            })
+            .catch(error => console.error('Error searching for restaurants:', error));
+    }
+
+    function sortRestaurants(places, criterion) {
+        switch (criterion) {
+            case 'ratingHigh':
+                return places.sort((a, b) => b.rating - a.rating);
+            case 'ratingLow':
+                return places.sort((a, b) => a.rating - b.rating);
+            case 'distanceNear':
+                return places.sort((a, b) => a.distance - b.distance);
+            case 'distanceFar':
+                return places.sort((a, b) => b.distance - a.distance);
+            default:
+                return places;
+        }
+    }
 
 
-function filterByRating(places, rating) {
-    return places.filter(place => place.rating >= rating);
-}
+    function filterByRating(places, rating) {
+        return places.filter(place => place.rating >= rating);
+    }
 
-function filterByDistance(places, distance) {
-    return places.filter(place => place.distance <= distance);
-}
+    function filterByDistance(places, distance) {
+        return places.filter(place => place.distance <= distance);
+    }
 
-function openModal($el, place, card) {
-    $el.classList.add('is-active');
-    displayLogos(place, card)
-    displayReviews(place, card);
-}
+    function openModal($el, place, card) {
+        $el.classList.add('is-active');
+        displayLogos(place, card)
+        displayReviews(place, card);
+    }
 
-function closeModal($el) {
-    $el.classList.remove('is-active');
-}
+    function closeModal($el) {
+        $el.classList.remove('is-active');
+    }
 
-function closeAllModals() {
-    (document.querySelectorAll('.modal') || []).forEach(($modal) => {
-        closeModal($modal);
+    function closeAllModals() {
+        (document.querySelectorAll('.modal') || []).forEach(($modal) => {
+            closeModal($modal);
+        });
+    }
+
+    document.addEventListener('keydown', (event) => {
+        if(event.key === "Escape") {
+            closeAllModals();
+        }
     });
-}
 
-document.addEventListener('keydown', (event) => {
-    if(event.key === "Escape") {
-        closeAllModals();
-    }
-});
+    function displayReviews(place, card) {
+        const reviews = Array.isArray(place.reviews) ? place.reviews.slice(0, 5) : [];
 
-function displayReviews(place, card) {
-    const reviews = Array.isArray(place.reviews) ? place.reviews.slice(0, 5) : [];
+        // Create a reviews container element
+        const reviewsContainer = document.createElement('div');
+        reviewsContainer.className = 'reviews-container mt-3';
 
-    // Create a reviews container element
-    const reviewsContainer = document.createElement('div');
-    reviewsContainer.className = 'reviews-container mt-3';
+        if (reviews.length > 0) {
+            reviews.forEach(review => {
+                const reviewElement = document.createElement('div');
+                reviewElement.className = 'review mb-2';
 
-    if (reviews.length > 0) {
-        reviews.forEach(review => {
-            const reviewElement = document.createElement('div');
-            reviewElement.className = 'review mb-2';
+                const rating = review.rating ? `${review.rating}/5` : 'No rating available';
 
-            const rating = review.rating ? `${review.rating}/5` : 'No rating available';
-
-            // Format the review
-            reviewElement.innerHTML = `
+                // Format the review
+                reviewElement.innerHTML = `
                 <p><strong>${review.author_name}</strong> - <em>${review.relative_time_description}</em></p>
                 <p>Rating: ${rating}</p>
                 <p>${review.text || 'No review text provided.'}</p>
             `;
-            reviewsContainer.appendChild(reviewElement);
+                reviewsContainer.appendChild(reviewElement);
+            });
+        } else {
+            reviewsContainer.innerHTML = '<p>No reviews available for this restaurant.</p>';
+        }
+
+        // Ensure card is a valid DOM element
+        if (card instanceof HTMLElement) {
+            card.appendChild(reviewsContainer);
+        } else {
+            console.error('Invalid card element provided.');
+        }
+    }
+
+
+
+    function displayLogos(place, modal) {
+        const attributes = [
+            { name: 'beer', checkFunction: checkBeer, logo: `<img class="logo" src="${logos.beer}">` },
+            { name: 'breakfast', checkFunction: checkBreakfast, logo: `<img class="logo" src="${logos.breakfast}">` },
+            { name: 'curbsidePickup', checkFunction: checkCurbsidePickup, logo: `<img class="logo" src="${logos.curbsidePickup}">` },
+            { name: 'delivery', checkFunction: checkDelivery, logo: `<img class="logo" src="${logos.delivery}">` },
+            { name: 'dineIn', checkFunction: checkDineIn, logo: `<img class="logo" src="${logos.dineIn}">` },
+            { name: 'dinner', checkFunction: checkDinner, logo: `<img class="logo" src="${logos.dinner}">` },
+            { name: 'lunch', checkFunction: checkLunch, logo: `<img class="logo" src="${logos.lunch}">` },
+            { name: 'reservable', checkFunction: checkReservable, logo: `<img class="logo" src="${logos.reservable}">` },
+            { name: 'takeout', checkFunction: checkTakeout, logo: `<img class="logo" src="${logos.takeout}">` },
+            { name: 'vegetarian', checkFunction: checkVegetarian, logo: `<img class="logo" src="${logos.vegetarian}">` },
+            { name: 'wine', checkFunction: checkWine, logo: `<img class="logo" src="${logos.wine}">` }
+        ];
+
+        function checkBeer(place) { return place.serves_beer; }
+        function checkBreakfast(place) { return place.serves_breakfast; }
+        function checkCurbsidePickup(place) { return place.curbside_pickup; }
+        function checkDelivery(place) { return place.delivery; }
+        function checkDineIn(place) { return place.dine_in; }
+        function checkDinner(place) { return place.serves_dinner; }
+        function checkLunch(place) { return place.serves_lunch; }
+        function checkReservable(place) { return place.reservable; }
+        function checkTakeout(place) { return place.takeout; }
+        function checkVegetarian(place) { return place.serves_vegetarian_food; }
+        function checkWine(place) { return place.serves_wine; }
+
+        const logoContainer = modal.querySelector('#logoContainer');
+        logoContainer.innerHTML = '';
+        attributes.forEach(attr => {
+            if (attr.checkFunction(place)) {
+                const logoDiv = document.createElement('div');
+                logoDiv.innerHTML = attr.logo;
+                logoContainer.appendChild(logoDiv);
+            }
         });
-    } else {
-        reviewsContainer.innerHTML = '<p>No reviews available for this restaurant.</p>';
     }
 
-    // Ensure card is a valid DOM element
-    if (card instanceof HTMLElement) {
-        card.appendChild(reviewsContainer);
-    } else {
-        console.error('Invalid card element provided.');
+    // Function to display restaurants as cards
+    function displayRestaurants(places) {
+        const container = document.getElementById('restaurant-cards');
+        container.className = 'mt-2'
+        container.innerHTML = ''; // Clear existing content
+        container.style.height = 'calc(85vh - 30px)'; // Set the height
+        container.style.overflowY = 'scroll'; // Allow vertical scrolling
+
+        const ratingFilter = document.getElementById('ratingFilter').value;
+        const distanceFilter = document.getElementById('distanceFilter').value;
+        const sortOption = document.getElementById('sortOptions').value;
+
+        // Apply rating filter if selected
+        if (ratingFilter) {
+            places = filterByRating(places, parseInt(ratingFilter));
+        }
+
+        // Apply distance filter if selected
+        if (distanceFilter) {
+            places = filterByDistance(places, parseInt(distanceFilter));
+        }
+
+        // Apply sorting after filtering
+        const sortedPlaces = sortRestaurants(places, sortOption);
+
+        sortedPlaces.forEach(place => {
+            const card = document.createElement('div');
+            card.className = 'card mx-2';
+
+            function createStarRating(rating) {
+                let starsHTML = '';
+                for (let i = 1; i <= place.rating; i++) { // Assuming a maximum of 5 stars
+                    starsHTML += `<span class="star ${i <= rating ? 'filled' : ''}">&#9733;</span>`; // Unicode star character
+                }
+                return starsHTML; // Return the generated star HTML
+            }
+            function createPriceRating(priceLevel) {
+                let priceHTML = '';
+                for (let i = 0; i < place.price_level; i++) {
+                    priceHTML += '$'; // Append dollar signs based on price level
+                }
+                return priceHTML; // Return the generated dollar signs HTML
+            }
+            function checkOpenStatus(place) {
+                // Check if the open_now property exists and is true or false
+                if (place.status.open_now) {
+                    return "Open"; // If true, return "Open"
+                } else {
+                    return "Closed"; // If false, return "Closed"
+                }
+            }
+            const loved = isLoved(place.id)
+            if (loved) {console.log(place.name + loved)}
+
+            card.innerHTML = `
+    <div class='card-content is-flex is-flex-direction-row is-justify-content-space-between mx-2'>
+        <div class='is-size-2' style="flex: 1; margin-right: 1rem;">
+            <strong>${place.name}</strong>
+            <p class="is-size-6">${place.editorial_summary}</p>
+            <div class="is-size-5">${createStarRating(place.rating)} ${createPriceRating(place.price_level)} ${checkOpenStatus(place)}</div>
+            <p class="is-size-6">${place.address}</p>
+        </div>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="placeId" value="${place.id}">
+            <button type="submit" name="action" value="${loved ? 'unfavorite' : 'favorite'}" class='is-size-2'>
+                <img src="{% static 'images/heart-unfilled-new.png' %}" alt="Heart Icon" style="width: 40px; height: 40px;">
+            </button>
+        </form>
+    </div>
+    <footer class="card-footer">
+        <button class="card-footer-item" data-target="modal-${place.id}">More</button>
+    </footer>
+    <div class="modal" id="modal-${place.id}">
+      <div class="modal-background"></div>
+      <div class="modal-card" style="width: 80vh; height: 80vh;">
+        <header class="modal-card-head">
+          <p class="modal-card-title"><strong>${place.name}</strong></p>
+          <button class="delete" aria-label="close"></button>
+        </header>
+        <section class="modal-card-body">
+          <div class='columns' style="margin: 1rem; display: flex;">
+              <div class="column is-half" style="padding: 1rem;">
+                  <div class='is-size-2'>
+                    <p class="is-size-6">${place.editorial_summary}</p>
+                    <div class="is-size-5" style="margin-bottom: 1rem;">${createStarRating(place.rating)} ${createPriceRating(place.price_level)} ${checkOpenStatus(place)}</div>
+                    <p class="is-size-6" style="margin-bottom: 1rem;">${place.address}</p>
+                    <p class="is-size-6" style="margin-bottom: 1rem;">${place.phone_number}</p>
+                    <div id="logoContainer" class="logo-container" style="margin-bottom: 2rem;"></div>
+                    <div id="reviewsContainer" class="reviews-container" style="margin-bottom: 2rem;"></div>
+                </div>
+              </div>
+              <div class="column is-half" style="padding: 1rem;">
+                  <gmp-map style="height:60vh; width:100%;" map-id="1c12e499c0237ede" center="${place.coords.location.lat},${place.coords.location.lng}" zoom="18"></gmp-map>
+              </div>
+          </div>
+          <h2 class="title is-3" style="color: #ffffff; margin-top: 2rem;">Leave a Review</h2>
+          <div class="field" style="margin-bottom: 1rem;">
+              <label class="label" style="color: #ffffff;">Rating</label>
+              <div class="control">
+                  <div class="select">
+                      <select name="rating" id="rating" style="background-color: #2a2a2a; color: #ffffff; border-color: #4a4a4a;">
+                          <option value="1">1 Star</option>
+                          <option value="2">2 Stars</option>
+                          <option value="3">3 Stars</option>
+                          <option value="4">4 Stars</option>
+                          <option value="5">5 Stars</option>
+                      </select>
+                  </div>
+              </div>
+          </div>
+
+          <div class="field" style="margin-bottom: 1rem;">
+              <label class="label" style="color: #ffffff;">Your Review</label>
+              <div class="control">
+                  <textarea class="textarea" name="text" id="reviewBar" placeholder="Write your review here" style="background-color: #2a2a2a; color: #ffffff; border-color: #4a4a4a;"></textarea>
+              </div>
+          </div>
+          <div class="field" style="margin-bottom: 1rem;">
+              <div class="control">
+                  <button class="button is-primary" id="submitRe" type="submit" style="background-color: #4caf50; border-color: transparent;">Submit Review</button>
+              </div>
+          </div>
+        </section>
+        <footer class="modal-card-foot">
+            <a class="button" href="${place.website}">Website</a>
+        </footer>
+      </div>
+    </div>
+`;
+
+            container.appendChild(card);
+            const heartButton = card.querySelector('button[type="submit"] img');
+            if (heartButton) {
+                heartButton.src = loved ? "{% static 'images/heart-filled-new.png' %}" : "{% static 'images/heart-unfilled-new.png' %}";
+            } else {
+                console.error("Heart button image element not found for place:", place.name);
+            }
+        });
     }
-}
 
-
-
-function displayLogos(place, modal) {
-    const attributes = [
-        { name: 'beer', checkFunction: checkBeer, logo: `<img class="logo" src="${logos.beer}">` },
-        { name: 'breakfast', checkFunction: checkBreakfast, logo: `<img class="logo" src="${logos.breakfast}">` },
-        { name: 'curbsidePickup', checkFunction: checkCurbsidePickup, logo: `<img class="logo" src="${logos.curbsidePickup}">` },
-        { name: 'delivery', checkFunction: checkDelivery, logo: `<img class="logo" src="${logos.delivery}">` },
-        { name: 'dineIn', checkFunction: checkDineIn, logo: `<img class="logo" src="${logos.dineIn}">` },
-        { name: 'dinner', checkFunction: checkDinner, logo: `<img class="logo" src="${logos.dinner}">` },
-        { name: 'lunch', checkFunction: checkLunch, logo: `<img class="logo" src="${logos.lunch}">` },
-        { name: 'reservable', checkFunction: checkReservable, logo: `<img class="logo" src="${logos.reservable}">` },
-        { name: 'takeout', checkFunction: checkTakeout, logo: `<img class="logo" src="${logos.takeout}">` },
-        { name: 'vegetarian', checkFunction: checkVegetarian, logo: `<img class="logo" src="${logos.vegetarian}">` },
-        { name: 'wine', checkFunction: checkWine, logo: `<img class="logo" src="${logos.wine}">` }
+    const lovedRestaurants = [
+        {% for place in lovedPlaces %}
+            "{{ place.placeId }}"{% if not forloop.last %},{% endif %}
+        {% endfor %}
     ];
 
-    function checkBeer(place) { return place.serves_beer; }
-    function checkBreakfast(place) { return place.serves_breakfast; }
-    function checkCurbsidePickup(place) { return place.curbside_pickup; }
-    function checkDelivery(place) { return place.delivery; }
-    function checkDineIn(place) { return place.dine_in; }
-    function checkDinner(place) { return place.serves_dinner; }
-    function checkLunch(place) { return place.serves_lunch; }
-    function checkReservable(place) { return place.reservable; }
-    function checkTakeout(place) { return place.takeout; }
-    function checkVegetarian(place) { return place.serves_vegetarian_food; }
-    function checkWine(place) { return place.serves_wine; }
+    function isLoved(placeId) {
+        return lovedRestaurants.includes(placeId)
+    }
 
-    const logoContainer = modal.querySelector('#logoContainer');
-    logoContainer.innerHTML = '';
-    attributes.forEach(attr => {
-        if (attr.checkFunction(place)) {
-            const logoDiv = document.createElement('div');
-            logoDiv.innerHTML = attr.logo;
-            logoContainer.appendChild(logoDiv);
+    document.getElementById('restaurant-cards').addEventListener('click', (event) => {
+        // Check if the clicked element is the one you want
+        if (event.target.classList.contains('card-footer-item')) {
+            const modalId = event.target.dataset.target; // Get the modal ID from the data attribute
+            const $targetModal = document.getElementById(modalId); // Find the modal by ID
+            if ($targetModal) {
+                openModal($targetModal); // Open the modal
+                displayLogos(place, $targetModal);
+                displayReviews(place, $targetModal);
+            }
         }
     });
-}
 
-// Function to display restaurants as cards
-function displayRestaurants(places) {
-    const container = document.getElementById('restaurant-cards');
-    container.className = 'mt-2'
-    container.innerHTML = ''; // Clear existing content
-    container.style.height = 'calc(85vh - 30px)'; // Set the height
-    container.style.overflowY = 'scroll'; // Allow vertical scrolling
 
-    const ratingFilter = document.getElementById('ratingFilter').value;
-    const distanceFilter = document.getElementById('distanceFilter').value;
-    const sortOption = document.getElementById('sortOptions').value;
 
-    // Apply rating filter if selected
-    if (ratingFilter) {
-        places = filterByRating(places, parseInt(ratingFilter));
-    }
+    document.getElementById('restaurant-cards').addEventListener('click', (event) => {
+        // Check if the clicked element is a close button
+        if (event.target.classList.contains('delete') || event.target.classList.contains('close-modal')) {
+            const $modal = event.target.closest('.modal'); // Find the closest modal element
 
-    // Apply distance filter if selected
-    if (distanceFilter) {
-        places = filterByDistance(places, parseInt(distanceFilter));
-    }
-
-    // Apply sorting after filtering
-    const sortedPlaces = sortRestaurants(places, sortOption);
-
-    sortedPlaces.forEach(place => {
-        const card = document.createElement('div');
-        card.className = 'card mx-2';
-
-        function createMarker(place) {
-            const marker = new google.maps.Marker({
-                position: place.geometry.location,
-                map: map,
-                title: place.name
-            });
-            console.log("Marker added for:", place.name);
-        }
-
-        function createStarRating(rating) {
-            let starsHTML = '';
-            for (let i = 1; i <= place.rating; i++) { // Assuming a maximum of 5 stars
-                starsHTML += `<span class="star ${i <= rating ? 'filled' : ''}">&#9733;</span>`; // Unicode star character
+            if ($modal) {
+                closeModal($modal); // Close the modal
             }
-            return starsHTML; // Return the generated star HTML
-        }
-        function createPriceRating(priceLevel) {
-            let priceHTML = '';
-            for (let i = 0; i < place.price_level; i++) {
-                priceHTML += '$'; // Append dollar signs based on price level
-            }
-            return priceHTML; // Return the generated dollar signs HTML
-        }
-        function checkOpenStatus(place) {
-            // Check if the open_now property exists and is true or false
-            if (place.status.open_now) {
-                return "Open"; // If true, return "Open"
-            } else {
-                return "Closed"; // If false, return "Closed"
-            }
-        }
-        const loved = isLoved(place.id)
-        if (loved) {console.log(place.name + loved)}
-
-        card.innerHTML = `
-            <div class='card-content is-flex is-flex-direction-row is-justify-content-space-between mx-2'>
-                <div class='is-size-2'>
-                    <strong>${place.name}</strong>
-                    <p class="is-size-6">${place.editorial_summary}</p>
-                    <div class="is-size-5">${createStarRating(place.rating)} ${createPriceRating(place.price_level)} ${checkOpenStatus(place)}</div>
-                    <p class="is-size-6">${place.address}</p>
-                </div>
-                <form method="post">
-                    {% csrf_token %}
-                        <input type="hidden" name="placeId" value="${place.id}">
-                        <button type="submit" name="action" value="${loved ? 'unfavorite' : 'favorite'}" class='is-size-2'>
-                            <img src="{% static 'images/heart-unfilled-new.png' %}" alt="Heart Icon" style="width: 40px; height: 40px;">
-                        </button>
-                </form>
-            </div>
-            <footer class="card-footer">
-                <button class="card-footer-item" data-target="modal-${place.id}">More</button>
-            </footer>
-            <div class="modal" id="modal-${place.id}">
-              <div class="modal-background"></div>
-              <div class="modal-card" style="width: 80vh; height: 80vh;">
-                <header class="modal-card-head">
-                  <p class="modal-card-title"><strong>${place.name}</strong></p>
-                  <button class="delete" aria-label="close"></button>
-                </header>
-                <section class="modal-card-body is-flex is-flex-direction-row is-justify-content-space-between">
-                <div class='columns' style="width: 100%;">
-                    <div class="column is-half">
-                          <div class='is-size-2'>
-                            <p class="is-size-6">${place.editorial_summary}</p>
-                            <div class="is-size-5">${createStarRating(place.rating)} ${createPriceRating(place.price_level)} ${checkOpenStatus(place)}</div>
-                            <p class="is-size-6">${place.address}</p>
-                            <p class="is-size-6">${place.phone_number}</p>
-                            <div id="logoContainer" class="logo-container"></div>
-                            <div id="reviewsContainer" class="reviews-container"></div>
-                        </div>
-                    </div>
-                    <div class="column is-half">
-                        <gmp-map style="height:80%; width:100%;" map-id="1c12e499c0237ede" center="${place.coords.location.lat},${place.coords.location.lng}" zoom="18">
-                        </gmp-map>
-                    </div>
-                </div>
-                </section>
-                    <footer class="modal-card-foot">
-                        <a class="button" href="${place.website}">Website</a>
-                    </footer>
-              </div>
-              <div class="section" style="padding-top: 2rem;">
-            <h2 class="title is-3" style="color: #ffffff;">Leave a Review</h2>
-                <div class="field">
-                    <label class="label" style="color: #ffffff;">Rating</label>
-                    <div class="control">
-                        <div class="select">
-                            <select name="rating" id="rating" style="background-color: #2a2a2a; color: #ffffff; border-color: #4a4a4a;">
-                                <option value="1">1 Star</option>
-                                <option value="2">2 Stars</option>
-                                <option value="3">3 Stars</option>
-                                <option value="4">4 Stars</option>
-                                <option value="5">5 Stars</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="field">
-                    <label class="label" style="color: #ffffff;">Your Review</label>
-                    <div class="control">
-                        <textarea class="textarea" name="text" id="reviewBar" placeholder="Write your review here" style="background-color: #2a2a2a; color: #ffffff; border-color: #4a4a4a;"></textarea>
-                    </div>
-                </div>
-                <div class="field">
-                    <div class="control">
-                        <button class="button is-primary" id="submitRe" type="submit" style="background-color: #4caf50; border-color: transparent;">Submit Review</button>
-                    </div>
-                </div>
-</div>
-            </div>
-        `
-        container.appendChild(card);
-        const heartButton = card.querySelector('button[type="submit"] img');
-        if (heartButton) {
-            heartButton.src = loved ? "{% static 'images/heart-filled-new.png' %}" : "{% static 'images/heart-unfilled-new.png' %}";
-        } else {
-            console.error("Heart button image element not found for place:", place.name);
         }
     });
-}
 
-const lovedRestaurants = [
-    {% for place in lovedPlaces %}
-        "{{ place.placeId }}"{% if not forloop.last %},{% endif %}
-    {% endfor %}
-];
-
-function isLoved(placeId) {
-    return lovedRestaurants.includes(placeId)
-}
-
-document.getElementById('restaurant-cards').addEventListener('click', (event) => {
-    // Check if the clicked element is the one you want
-    if (event.target.classList.contains('card-footer-item')) {
-        const modalId = event.target.dataset.target; // Get the modal ID from the data attribute
-        const $targetModal = document.getElementById(modalId); // Find the modal by ID
-        if ($targetModal) {
-            openModal($targetModal); // Open the modal
-            displayLogos(place, $targetModal);
-            displayReviews(place, $targetModal);
-        }
-    }
-});
-
-
-
-document.getElementById('restaurant-cards').addEventListener('click', (event) => {
-    // Check if the clicked element is a close button
-    if (event.target.classList.contains('delete') || event.target.classList.contains('close-modal')) {
-        const $modal = event.target.closest('.modal'); // Find the closest modal element
-
-        if ($modal) {
-            closeModal($modal); // Close the modal
-        }
-    }
-});
-
-// Add event listener to search button
-document.getElementById('searchButton').addEventListener('click', function() {
-    const keyword = document.getElementById('searchBar').value;
-    if (keyword) {
-        searchRestaurants(keyword);
-    } else {
-        fetchInitialData();
-    }
-});
-
-document.getElementById('searchBar').addEventListener('keydown', function(event) {
-    if (event.key === 'Enter') { // Check if the pressed key is 'Enter'
+    // Add event listener to search button
+    document.getElementById('searchButton').addEventListener('click', function() {
         const keyword = document.getElementById('searchBar').value;
         if (keyword) {
             searchRestaurants(keyword);
         } else {
             fetchInitialData();
         }
-    }
-});
+    });
+
+    document.getElementById('searchBar').addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') { // Check if the pressed key is 'Enter'
+            const keyword = document.getElementById('searchBar').value;
+            if (keyword) {
+                searchRestaurants(keyword);
+            } else {
+                fetchInitialData();
+            }
+        }
+    });
 
 
 
 
-document.getElementById('sortOptions').addEventListener('change', function() {
-    searchRestaurants(keyword);
-});
+    document.getElementById('sortOptions').addEventListener('change', function() {
+        searchRestaurants(keyword);
+    });
 
-document.getElementById('ratingFilter').addEventListener('change', function() {
-    searchRestaurants(keyword);
-});
-
-
-document.getElementById('distanceFilter').addEventListener('change', function() {
-    searchRestaurants(keyword);
-});
-
-document.getElementById('submitRe').addEventListener('click', function(event) {
-    makeReview(placeId);
-});
-
-     
-document.getElementById('submitRe').addEventListener('click', function(event) {
-    makeReview(placeId);
-});
-
-function makeReview(placeId) {
-    const rating = document.querySelector('select[name="rating"]').value;
-    const reviewText = document.querySelector('textarea[name="text"]').value;
-
-    // Validate that both rating and review text are filled out
-    if (!rating || !reviewText) {
-        alert('Please fill out both fields');
-        return;
-    }
-
-    // Create a new review card
-    const reviewCard = document.createElement('div');
-    reviewCard.className = 'card';
-    reviewCard.style.marginTop = '1rem'; // Add some margin for spacing
-
-    // Set the inner HTML of the review card
-
-    card.innerHTML += `
-        <div class="card-content" style="background-color: #2a2a2a; color: #ffffff;">
-            <p class="is-size-4">Rating: ${rating} Star${rating > 1 ? 's' : ''}</p>
-            <p class="is-size-5">${reviewText}</p>
-        </div>
-    `;
-
-    // Find the section where reviews are displayed
-    const reviewSection = document.getElementById('review-section'); // Make sure there's an element with this ID in your HTML
-    reviewSection.appendChild(reviewCard);
-
-    document.querySelector('select[name="rating"]').value = '';
-    document.querySelector('textarea[name="text"]').value = '';
-
-    alert('Review submitted successfully!');
-}
+    document.getElementById('ratingFilter').addEventListener('change', function() {
+        searchRestaurants(keyword);
+    });
 
 
+    document.getElementById('distanceFilter').addEventListener('change', function() {
+        searchRestaurants(keyword);
+    });
 
-// Call function to fetch initial data on page load
-document.addEventListener('DOMContentLoaded', fetchInitialData);
+
+    // Call function to fetch initial data on page load
+    document.addEventListener('DOMContentLoaded', fetchInitialData);
 
 </script>
 
