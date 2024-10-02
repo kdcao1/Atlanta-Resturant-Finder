@@ -424,32 +424,35 @@ function makeReview(placeId) {
     const rating = document.querySelector('select[name="rating"]').value;
     const reviewText = document.querySelector('textarea[name="text"]').value;
 
+    // Validate that both rating and review text are filled out
     if (!rating || !reviewText) {
         alert('Please fill out both fields');
         return;
     }
 
-    fetch(`/submit-review/${placeId}/`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-        },
-        body: JSON.stringify({
-            rating: rating,
-            reviewText: reviewText
-        })
-    })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Review submitted successfully!');
-            } else {
-                alert('Error submitting review.');
-            }
-        })
-        .catch(error => console.error('Error:', error));
+    // Create a new review card
+    const reviewCard = document.createElement('div');
+    reviewCard.className = 'card';
+    reviewCard.style.marginTop = '1rem'; // Add some margin for spacing
+
+    // Set the inner HTML of the review card
+    reviewCard.innerHTML = `
+        <div class="card-content" style="background-color: #2a2a2a; color: #ffffff;">
+            <p class="is-size-4">Rating: ${rating} Star${rating > 1 ? 's' : ''}</p>
+            <p class="is-size-5">${reviewText}</p>
+        </div>
+    `;
+
+    // Find the section where reviews are displayed
+    const reviewSection = document.getElementById('review-section'); // Make sure there's an element with this ID in your HTML
+    reviewSection.appendChild(reviewCard);
+
+    document.querySelector('select[name="rating"]').value = '';
+    document.querySelector('textarea[name="text"]').value = '';
+
+    alert('Review submitted successfully!');
 }
+
 
 
 // Call function to fetch initial data on page load
