@@ -411,6 +411,10 @@
                   <button class="button is-primary" id="submitRe" type="submit" style="background-color: #4caf50; border-color: transparent;">Submit Review</button>
               </div>
           </div>
+          <div id="reviewsContainer" style="margin-top: 2rem;">
+    <!-- New review cards will be appended here -->
+</div>
+
         </section>
         <footer class="modal-card-foot">
             <a class="button" href="${place.website}">Website</a>
@@ -486,7 +490,38 @@
         }
     });
 
+    document.getElementById('submitRe').addEventListener('click', function(event) {
+        event.preventDefault(); // Prevent default form submission
+        makeReview();
+    });
 
+    function makeReview() {
+        const rating = document.querySelector('select[name="rating"]').value;
+        const reviewText = document.querySelector('textarea[name="text"]').value;
+
+        // Validate that both rating and review text are filled out
+        if (!rating || !reviewText) {
+            return;
+        }
+
+        // Create a new review card
+        const reviewCard = document.createElement('div');
+        reviewCard.className = 'card';
+        reviewCard.style.marginTop = '1rem'; // Add some margin for spacing
+
+        // Set the inner HTML of the review card
+        reviewCard.innerHTML = `
+        <div class="card-content" style="background-color: #2a2a2a; color: #ffffff;">
+            <p class="is-size-4">Rating: ${rating} Star${rating > 1 ? 's' : ''}</p>
+            <p class="is-size-5">${reviewText}</p>
+        </div>
+    `;
+
+        // Append the review card to the desired container
+        const reviewsContainer = document.getElementById('reviewsContainer'); // Ensure this element exists in your HTML
+        reviewsContainer.appendChild(reviewCard);
+
+    }
 
 
     document.getElementById('sortOptions').addEventListener('change', function() {
