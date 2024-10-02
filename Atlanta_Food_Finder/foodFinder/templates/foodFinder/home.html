@@ -213,6 +213,15 @@ function displayRestaurants(places) {
         const card = document.createElement('div');
         card.className = 'card mx-2';
 
+        function createMarker(place) {
+            const marker = new google.maps.Marker({
+                position: place.geometry.location,
+                map: map,
+                title: place.name
+            });
+            console.log("Marker added for:", place.name);
+        }
+
         function createStarRating(rating) {
             let starsHTML = '';
             for (let i = 1; i <= place.rating; i++) { // Assuming a maximum of 5 stars
