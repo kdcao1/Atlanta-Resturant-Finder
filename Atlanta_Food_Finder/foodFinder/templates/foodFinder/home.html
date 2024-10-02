@@ -18,6 +18,23 @@
             height: 24px;
         }
     </style>
+    <script>
+        const logos = {
+            beer: "{% static 'images/restaurantInfo/beer.svg' %}",
+            breakfast: "{% static 'images/restaurantInfo/breakfast.png' %}",
+            curbsidePickup: "{% static 'images/restaurantInfo/curbsidePickup.png' %}",
+            delivery: "{% static 'images/restaurantInfo/delivery.svg' %}",
+            dineIn: "{% static 'images/restaurantInfo/dineIn.png' %}",
+            dinner: "{% static 'images/restaurantInfo/dinner.png' %}",
+            lunch: "{% static 'images/restaurantInfo/lunch.png' %}",
+            reservable: "{% static 'images/restaurantInfo/reservable.png' %}",
+            takeout: "{% static 'images/restaurantInfo/takeout.svg' %}",
+            vegetarian: "{% static 'images/restaurantInfo/vegetarian.svg' %}",
+            wine: "{% static 'images/restaurantInfo/wine.svg' %}"
+        };
+        const heartIconUnfull = "{% static 'images/heart-unfilled.png' %}";
+        const heartIconFull = "{% static 'images/heart-filled.png' %}";
+    </script>
 </head>
 <body>
 <section class="hero is-fullheight">
@@ -180,7 +197,7 @@ document.addEventListener('keydown', (event) => {
 });
 
 function displayReviews(place, card) {
-    const reviews = place.reviews || [];
+    const reviews = Array.isArray(place.reviews) ? place.reviews.slice(0, 5) : [];
 
     // Create a reviews container element
     const reviewsContainer = document.createElement('div');
@@ -191,11 +208,13 @@ function displayReviews(place, card) {
             const reviewElement = document.createElement('div');
             reviewElement.className = 'review mb-2';
 
+            const rating = review.rating ? `${review.rating}/5` : 'No rating available';
+
             // Format the review
             reviewElement.innerHTML = `
                 <p><strong>${review.author_name}</strong> - <em>${review.relative_time_description}</em></p>
-                <p>Rating: ${review.rating}/5</p>
-                <p>${review.text}</p>
+                <p>Rating: ${rating}</p>
+                <p>${review.text || 'No review text provided.'}</p>
             `;
             reviewsContainer.appendChild(reviewElement);
         });
@@ -203,62 +222,45 @@ function displayReviews(place, card) {
         reviewsContainer.innerHTML = '<p>No reviews available for this restaurant.</p>';
     }
 
-    // Append the reviews to the card (place where you want them)
-    card.appendChild(reviewsContainer);
+    // Ensure card is a valid DOM element
+    if (card instanceof HTMLElement) {
+        card.appendChild(reviewsContainer);
+    } else {
+        console.error('Invalid card element provided.');
+    }
 }
+
 
 
 function displayLogos(place, modal) {
     const attributes = [
-            { name: 'beer', checkFunction: checkBeer, logo: '<img class="logo" src="{% static 'images/restaurantInfo/beer.svg' %}"' },
-            { name: 'breakfast', checkFunction: checkBreakfast, logo: '<img class="logo" src="{% static 'images/restaurantInfo/breakfast.png' %}"' },
-            { name: 'curbsidePickup', checkFunction: checkCurbsidePickup, logo: '<img class="logo" src="{% static 'images/restaurantInfo/curbsidePickup.png' %}"' },
-            { name: 'delivery', checkFunction: checkDelivery, logo: '<img class="logo" src="{% static 'images/restaurantInfo/delivery.svg' %}"' },
-            { name: 'dineIn', checkFunction: checkDineIn, logo: '<img class="logo" src="{% static 'images/restaurantInfo/dineIn.png' %}"' },
-            { name: 'dinner', checkFunction: checkDinner, logo: '<img class="logo" src="{% static 'images/restaurantInfo/dinner.png' %}"' },
-            { name: 'lunch', checkFunction: checkLunch, logo: '<img class="logo" src="{% static 'images/restaurantInfo/lunch.png' %}"' },
-            { name: 'reservable', checkFunction: checkReservable, logo: '<img class="logo" src="{% static 'images/restaurantInfo/reservable.png' %}"' },
-            { name: 'takeout', checkFunction: checkTakeout, logo: '<img class="logo" src="{% static 'images/restaurantInfo/takeout.svg' %}"' },
-            { name: 'vegetarian', checkFunction: checkVegetarian, logo: '<img class="logo" src="{% static 'images/restaurantInfo/vegetarian.svg' %}"' },
-            { name: 'wine', checkFunction: checkWine, logo: '<img class="logo" src="{% static 'images/restaurantInfo/wine.svg' %}"' },
-    ]
+        { name: 'beer', checkFunction: checkBeer, logo: `<img class="logo" src="${logos.beer}">` },
+        { name: 'breakfast', checkFunction: checkBreakfast, logo: `<img class="logo" src="${logos.breakfast}">` },
+        { name: 'curbsidePickup', checkFunction: checkCurbsidePickup, logo: `<img class="logo" src="${logos.curbsidePickup}">` },
+        { name: 'delivery', checkFunction: checkDelivery, logo: `<img class="logo" src="${logos.delivery}">` },
+        { name: 'dineIn', checkFunction: checkDineIn, logo: `<img class="logo" src="${logos.dineIn}">` },
+        { name: 'dinner', checkFunction: checkDinner, logo: `<img class="logo" src="${logos.dinner}">` },
+        { name: 'lunch', checkFunction: checkLunch, logo: `<img class="logo" src="${logos.lunch}">` },
+        { name: 'reservable', checkFunction: checkReservable, logo: `<img class="logo" src="${logos.reservable}">` },
+        { name: 'takeout', checkFunction: checkTakeout, logo: `<img class="logo" src="${logos.takeout}">` },
+        { name: 'vegetarian', checkFunction: checkVegetarian, logo: `<img class="logo" src="${logos.vegetarian}">` },
+        { name: 'wine', checkFunction: checkWine, logo: `<img class="logo" src="${logos.wine}">` }
+    ];
 
-    function checkBeer(place) {
-        return (place.serves_beer);
-    }
-    function checkBreakfast(place) {
-        return (place.serves_breakfast);
-    }
-    function checkCurbsidePickup(place) {
-        return (place.curbside_pickup);
-    }
-    function checkDelivery(place) {
-        return (place.delivery);
-    }
-    function checkDineIn(place) {
-        return (place.dine_in);
-    }
-    function checkDinner(place) {
-        return (place.serves_dinner);
-    }
-    function checkLunch(place) {
-        return (place.serves_lunch);
-    }
-    function checkReservable(place) {
-        return (place.reservable);
-    }
-    function checkTakeout(place) {
-        return (place.takeout);
-    }
-    function checkVegetarian(place) {
-        return (place.serves_vegetarian_food);
-    }
-    function checkWine(place) {
-        return (place.serves_wine);
-    }
+    function checkBeer(place) { return place.serves_beer; }
+    function checkBreakfast(place) { return place.serves_breakfast; }
+    function checkCurbsidePickup(place) { return place.curbside_pickup; }
+    function checkDelivery(place) { return place.delivery; }
+    function checkDineIn(place) { return place.dine_in; }
+    function checkDinner(place) { return place.serves_dinner; }
+    function checkLunch(place) { return place.serves_lunch; }
+    function checkReservable(place) { return place.reservable; }
+    function checkTakeout(place) { return place.takeout; }
+    function checkVegetarian(place) { return place.serves_vegetarian_food; }
+    function checkWine(place) { return place.serves_wine; }
 
-    const logoContainer = modal.querySelector('#logoContainer'); // Get the specific logoContainer inside the modal
-    logoContainer.innerHTML = ''; // Clear any previous logos before adding new ones
+    const logoContainer = modal.querySelector('#logoContainer');
+    logoContainer.innerHTML = '';
     attributes.forEach(attr => {
         if (attr.checkFunction(place)) {
             const logoDiv = document.createElement('div');
@@ -269,8 +271,13 @@ function displayLogos(place, modal) {
 }
 
 
+
 // Function to display restaurants as cards
 function displayRestaurants(places) {
+    if(places==null) {
+        console.log("no places")
+        return;
+    }
     const container = document.getElementById('restaurant-cards');
     container.className = 'mt-2'
     container.innerHTML = ''; // Clear existing content
