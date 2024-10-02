@@ -23,7 +23,6 @@
                     <a class="navbar-item" href="/foodFinder">
                         Home
                     </a>
-
                     <a class="navbar-item" href="/foodFinder/favorites">
                         Favorites
                     </a>
@@ -54,13 +53,17 @@
         <div class="container is-fluid mt-4" style="height: 85vh;">
             <div class="columns is-vcentered" style="height: 85vh;">
                 <div class='column is-half' style="height: 85vh;">
-                    <div class="control is-flex is-flex-direction-row is-justify-content-space-between">
-                        <div class="is-flex-grow-1 mr-2">
+                    <div class="field is-flex">
+                        <div class="control is-flex-grow-1 mr-2">
                             <input class="input is-rounded" id="searchBar" name="searchBar" type="text" placeholder="Search restaurants" />
                         </div>
+                        <div class="control">
+                            <button id="searchButton" class="button is-primary is-normal is-rounded">Search</button>
+                        </div>
+                    </div>
+                    <div class="control is-flex is-flex-direction-row is-justify-content-space-between">
                         <div>
-                            <button id="searchButton" class="button is-primary is-normal">Search</button>
-                            <div class="select is-primary">
+                            <div class="select is-primary" style="padding-left: 20px; padding-right: 10px;">
                                 <select id="ratingFilter">
                                     <option value="">Filter by Rating</option>
                                     <option value="4">4 & Up</option>
@@ -69,7 +72,7 @@
                                     <option value="1">1 & Up</option>
                                 </select>
                             </div>
-                            <div class="select is-primary">
+                            <div class="select is-primary" style="padding-left: 10px; padding-right: 10px;">
                                 <select id="distanceFilter">
                                     <option value="">Filter by Distance</option>
                                     <option value="5">Within 5 km</option>
@@ -77,7 +80,7 @@
                                     <option value="20">Within 20 km</option>
                                 </select>
                             </div>
-                            <div class="select is-primary">
+                            <div class="select is-primary" style="padding-left: 10px; padding-right: 10px;">
                                 <select id="sortOptions">
                                     <option value="">Sort By</option>
                                     <option value="ratingHigh">Rating: High to Low</option>

@@ -110,8 +110,9 @@
             // Display a message indicating no favorites
             const message = document.createElement('div');
             message.className = 'has-text-centered';
-            message.innerHTML = `<p class="is-size-4">You have no favorite restaurants.</p>`;
+            message.innerHTML = `<p>You have no favorite restaurants, go find some!</p>`;
             container.appendChild(message);
+            console.log("No favorites");
             return; // Exit the function early
         }
 
