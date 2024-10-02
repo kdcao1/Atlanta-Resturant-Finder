@@ -7,6 +7,34 @@
     <title>Atlanta Food Finder</title>
     <link rel="stylesheet" href="{% static "./foodFinder/css/bulma.css" %}">
     <link rel="shortcut icon" type="image/png" href="{% static 'images/favicon.ico' %}" >
+    <style>
+        .logo-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .logo {
+            width: 24px;
+            height: 24px;
+        }
+    </style>
+    <script>
+        const logos = {
+            beer: "{% static 'images/restaurantInfo/beer.svg' %}",
+            breakfast: "{% static 'images/restaurantInfo/breakfast.png' %}",
+            curbsidePickup: "{% static 'images/restaurantInfo/curbsidePickup.png' %}",
+            delivery: "{% static 'images/restaurantInfo/delivery.svg' %}",
+            dineIn: "{% static 'images/restaurantInfo/dineIn.png' %}",
+            dinner: "{% static 'images/restaurantInfo/dinner.png' %}",
+            lunch: "{% static 'images/restaurantInfo/lunch.png' %}",
+            reservable: "{% static 'images/restaurantInfo/reservable.png' %}",
+            takeout: "{% static 'images/restaurantInfo/takeout.svg' %}",
+            vegetarian: "{% static 'images/restaurantInfo/vegetarian.svg' %}",
+            wine: "{% static 'images/restaurantInfo/wine.svg' %}"
+        };
+        const heartIconUnfull = "{% static 'images/heart-unfilled.png' %}";
+        const heartIconFull = "{% static 'images/heart-filled.png' %}";
+    </script>
 </head>
 <body>
 <section class="hero is-fullheight">
@@ -164,8 +192,10 @@ function filterByDistance(places, distance) {
     return places.filter(place => place.distance <= distance);
 }
 
-function openModal($el) {
+function openModal($el, place, card) {
     $el.classList.add('is-active');
+    displayLogos(place, card)
+    displayReviews(place, card);
 }
 
 function closeModal($el) {
@@ -183,6 +213,80 @@ document.addEventListener('keydown', (event) => {
         closeAllModals();
     }
 });
+
+function displayReviews(place, card) {
+    const reviews = Array.isArray(place.reviews) ? place.reviews.slice(0, 5) : [];
+
+    // Create a reviews container element
+    const reviewsContainer = document.createElement('div');
+    reviewsContainer.className = 'reviews-container mt-3';
+
+    if (reviews.length > 0) {
+        reviews.forEach(review => {
+            const reviewElement = document.createElement('div');
+            reviewElement.className = 'review mb-2';
+
+            const rating = review.rating ? `${review.rating}/5` : 'No rating available';
+
+            // Format the review
+            reviewElement.innerHTML = `
+                <p><strong>${review.author_name}</strong> - <em>${review.relative_time_description}</em></p>
+                <p>Rating: ${rating}</p>
+                <p>${review.text || 'No review text provided.'}</p>
+            `;
+            reviewsContainer.appendChild(reviewElement);
+        });
+    } else {
+        reviewsContainer.innerHTML = '<p>No reviews available for this restaurant.</p>';
+    }
+
+    // Ensure card is a valid DOM element
+    if (card instanceof HTMLElement) {
+        card.appendChild(reviewsContainer);
+    } else {
+        console.error('Invalid card element provided.');
+    }
+}
+
+
+
+function displayLogos(place, modal) {
+    const attributes = [
+        { name: 'beer', checkFunction: checkBeer, logo: `<img class="logo" src="${logos.beer}">` },
+        { name: 'breakfast', checkFunction: checkBreakfast, logo: `<img class="logo" src="${logos.breakfast}">` },
+        { name: 'curbsidePickup', checkFunction: checkCurbsidePickup, logo: `<img class="logo" src="${logos.curbsidePickup}">` },
+        { name: 'delivery', checkFunction: checkDelivery, logo: `<img class="logo" src="${logos.delivery}">` },
+        { name: 'dineIn', checkFunction: checkDineIn, logo: `<img class="logo" src="${logos.dineIn}">` },
+        { name: 'dinner', checkFunction: checkDinner, logo: `<img class="logo" src="${logos.dinner}">` },
+        { name: 'lunch', checkFunction: checkLunch, logo: `<img class="logo" src="${logos.lunch}">` },
+        { name: 'reservable', checkFunction: checkReservable, logo: `<img class="logo" src="${logos.reservable}">` },
+        { name: 'takeout', checkFunction: checkTakeout, logo: `<img class="logo" src="${logos.takeout}">` },
+        { name: 'vegetarian', checkFunction: checkVegetarian, logo: `<img class="logo" src="${logos.vegetarian}">` },
+        { name: 'wine', checkFunction: checkWine, logo: `<img class="logo" src="${logos.wine}">` }
+    ];
+
+    function checkBeer(place) { return place.serves_beer; }
+    function checkBreakfast(place) { return place.serves_breakfast; }
+    function checkCurbsidePickup(place) { return place.curbside_pickup; }
+    function checkDelivery(place) { return place.delivery; }
+    function checkDineIn(place) { return place.dine_in; }
+    function checkDinner(place) { return place.serves_dinner; }
+    function checkLunch(place) { return place.serves_lunch; }
+    function checkReservable(place) { return place.reservable; }
+    function checkTakeout(place) { return place.takeout; }
+    function checkVegetarian(place) { return place.serves_vegetarian_food; }
+    function checkWine(place) { return place.serves_wine; }
+
+    const logoContainer = modal.querySelector('#logoContainer');
+    logoContainer.innerHTML = '';
+    attributes.forEach(attr => {
+        if (attr.checkFunction(place)) {
+            const logoDiv = document.createElement('div');
+            logoDiv.innerHTML = attr.logo;
+            logoContainer.appendChild(logoDiv);
+        }
+    });
+}
 
 // Function to display restaurants as cards
 function displayRestaurants(places) {
@@ -272,6 +376,8 @@ function displayRestaurants(places) {
                             <div class="is-size-5">${createStarRating(place.rating)} ${createPriceRating(place.price_level)} ${checkOpenStatus(place)}</div>
                             <p class="is-size-6">${place.address}</p>
                             <p class="is-size-6">${place.phone_number}</p>
+                            <div id="logoContainer" class="logo-container"></div>
+                            <div id="reviewsContainer" class="reviews-container"></div>
                         </div>
                     </div>
                     <div class="column is-half">
@@ -284,6 +390,35 @@ function displayRestaurants(places) {
                         <a class="button" href="${place.website}">Website</a>
                     </footer>
               </div>
+              <div class="section" style="padding-top: 2rem;">
+            <h2 class="title is-3" style="color: #ffffff;">Leave a Review</h2>
+                <div class="field">
+                    <label class="label" style="color: #ffffff;">Rating</label>
+                    <div class="control">
+                        <div class="select">
+                            <select name="rating" id="rating" style="background-color: #2a2a2a; color: #ffffff; border-color: #4a4a4a;">
+                                <option value="1">1 Star</option>
+                                <option value="2">2 Stars</option>
+                                <option value="3">3 Stars</option>
+                                <option value="4">4 Stars</option>
+                                <option value="5">5 Stars</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label" style="color: #ffffff;">Your Review</label>
+                    <div class="control">
+                        <textarea class="textarea" name="text" id="reviewBar" placeholder="Write your review here" style="background-color: #2a2a2a; color: #ffffff; border-color: #4a4a4a;"></textarea>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="control">
+                        <button class="button is-primary" id="submitRe" type="submit" style="background-color: #4caf50; border-color: transparent;">Submit Review</button>
+                    </div>
+                </div>
+</div>
             </div>
         `
         container.appendChild(card);
@@ -313,6 +448,8 @@ document.getElementById('restaurant-cards').addEventListener('click', (event) =>
         const $targetModal = document.getElementById(modalId); // Find the modal by ID
         if ($targetModal) {
             openModal($targetModal); // Open the modal
+            displayLogos(place, $targetModal);
+            displayReviews(place, $targetModal);
         }
     }
 });
@@ -359,13 +496,52 @@ document.getElementById('sortOptions').addEventListener('change', function() {
 });
 
 document.getElementById('ratingFilter').addEventListener('change', function() {
-    searchRestaurants(keyword); 
+    searchRestaurants(keyword);
 });
 
 
 document.getElementById('distanceFilter').addEventListener('change', function() {
-    searchRestaurants(keyword); 
+    searchRestaurants(keyword);
 });
+
+document.getElementById('submitRe').addEventListener('click', function(event) {
+    makeReview(placeId);
+});
+
+function makeReview(placeId) {
+    const rating = document.querySelector('select[name="rating"]').value;
+    const reviewText = document.querySelector('textarea[name="text"]').value;
+
+    // Validate that both rating and review text are filled out
+    if (!rating || !reviewText) {
+        alert('Please fill out both fields');
+        return;
+    }
+
+    // Create a new review card
+    const reviewCard = document.createElement('div');
+    reviewCard.className = 'card';
+    reviewCard.style.marginTop = '1rem'; // Add some margin for spacing
+
+    // Set the inner HTML of the review card
+    reviewCard.innerHTML += `
+        <div class="card-content" style="background-color: #2a2a2a; color: #ffffff;">
+            <p class="is-size-4">Rating: ${rating} Star${rating > 1 ? 's' : ''}</p>
+            <p class="is-size-5">${reviewText}</p>
+        </div>
+    `;
+
+    // Find the section where reviews are displayed
+    const reviewSection = document.getElementById('review-section'); // Make sure there's an element with this ID in your HTML
+    reviewSection.appendChild(reviewCard);
+
+    document.querySelector('select[name="rating"]').value = '';
+    document.querySelector('textarea[name="text"]').value = '';
+
+    alert('Review submitted successfully!');
+}
+
+
 
 // Call function to fetch initial data on page load
 document.addEventListener('DOMContentLoaded', fetchInitialData);
