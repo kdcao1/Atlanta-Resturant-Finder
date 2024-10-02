@@ -284,6 +284,48 @@ function displayRestaurants(places) {
                         <a class="button" href="${place.website}">Website</a>
                     </footer>
               </div>
+              <div class="section" style="padding-top: 2rem;">
+            <h2 class="title is-3" style="color: #ffffff;">Leave a Review</h2>
+            <form method="post" action="{% url 'submit_review' place.id %}">
+                {% csrf_token %}
+                <div class="field">
+                    <label class="label" style="color: #ffffff;">Rating</label>
+                    <div class="control">
+                        <div class="select">
+                            <select name="rating" id="rating" style="background-color: #2a2a2a; color: #ffffff; border-color: #4a4a4a;">
+                                <option value="1">1 Star</option>
+                                <option value="2">2 Stars</option>
+                                <option value="3">3 Stars</option>
+                                <option value="4">4 Stars</option>
+                                <option value="5">5 Stars</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label" style="color: #ffffff;">Your Review</label>
+                    <div class="control">
+                        <textarea class="textarea" name="text" id="reviewText" placeholder="Write your review here" style="background-color: #2a2a2a; color: #ffffff; border-color: #4a4a4a;"></textarea>
+                    </div>
+                </div>
+
+                <!-- Add search bar input for reviews -->
+                <div class="field">
+                    <label class="label" style="color: #ffffff;">Find a Place to Review</label>
+                    <div class="control">
+                        <input id="reviewBar" class="input" type="text" placeholder="Enter place ID to leave a review" style="background-color: #2a2a2a; color: #ffffff; border-color: #4a4a4a;">
+                    </div>
+                </div>
+
+                <div class="field">
+                    <div class="control">
+                        <button class="button is-primary" type="submit" style="background-color: #4caf50; border-color: transparent;">Submit Review</button>
+                    </div>
+                </div>
+            </form>
+</div>
+
             </div>
         `
         container.appendChild(card);
@@ -366,6 +408,49 @@ document.getElementById('ratingFilter').addEventListener('change', function() {
 document.getElementById('distanceFilter').addEventListener('change', function() {
     searchRestaurants(keyword); 
 });
+
+document.getElementById('reviewBar').addEventListener('keydown', function(event) {
+    if (event.key === 'Enter') {
+        const placeId = document.getElementById('reviewBar').value;
+        if (placeId) {
+            makeReview(placeId);
+        } else {
+            return;
+        }
+    }
+});
+
+function makeReview(placeId) {
+    const rating = document.querySelector('select[name="rating"]').value;
+    const reviewText = document.querySelector('textarea[name="text"]').value;
+
+    if (!rating || !reviewText) {
+        alert('Please fill out both fields');
+        return;
+    }
+
+    fetch(`/submit-review/${placeId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify({
+            rating: rating,
+            reviewText: reviewText
+        })
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Review submitted successfully!');
+            } else {
+                alert('Error submitting review.');
+            }
+        })
+        .catch(error => console.error('Error:', error));
+}
+
 
 // Call function to fetch initial data on page load
 document.addEventListener('DOMContentLoaded', fetchInitialData);
