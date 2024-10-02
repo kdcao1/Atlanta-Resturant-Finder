@@ -1,3 +1,6 @@
+from django.contrib.auth.forms import PasswordResetForm
+from django.contrib.auth.hashers import make_password
+from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import render, redirect
 from django.views.decorators.http import require_POST
 from .forms import ProfileForm, Favorite
@@ -5,12 +8,12 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from .models import *
 from django.http import JsonResponse
-from django.core.mail import send_mail
-from django.utils.crypto import get_random_string
+from django.contrib.auth import update_session_auth_hash
 from django.shortcuts import get_object_or_404
 from .models import UserProfile
 import os
 from dotenv import load_dotenv
+from django.views import View
 load_dotenv()
 
 port = os.getenv('PORT')
@@ -229,57 +232,6 @@ def save_cropped_image(request):
 
     return JsonResponse({'error': 'Invalid request'}, status=400)
 
-def request_password_reset(request):
-    if request.method == 'POST':
-        email = request.POST.get('email')
-        try:
-            user = User.objects.get(email=email)
-
-            # Generate a unique token
-            token = get_random_string(20)
-            PasswordResetToken.objects.create(user=user, token=token)  # Save the token to the database
-
-            reset_link = f'http://yourdomain.com/reset-password/{token}/'
-
-            # Send email
-            send_mail(
-                'Password Reset Request',
-                f'Click the link to reset your password: {reset_link}',
-                'your_email@example.com',
-                [user.email],
-                fail_silently=False,
-            )
-            messages.success(request, 'Password reset email has been sent.')
-        except User.DoesNotExist:
-            messages.error(request, 'Email not associated with any user.')
-
-    return render(request, 'foodFinder/request_password_reset.html')
-
-def reset_password(request, token):
-    try:
-        token_obj = PasswordResetToken.objects.get(token=token)
-
-        if token_obj.is_expired():
-            messages.error(request, 'This password reset link has expired.')
-            return redirect('request_password_reset')  # Redirect to the request form
-
-        if request.method == 'POST':
-            password = request.POST.get('password')
-            user = token_obj.user  # Get the associated user
-
-            user.set_password(password)
-            user.save()
-
-            # Optionally, delete the token after successful use
-            token_obj.delete()
-
-            messages.success(request, 'Your password has been reset successfully!')
-            return redirect('login')  # Redirect to login page after resetting
-
-    except PasswordResetToken.DoesNotExist:
-        messages.error(request, 'Invalid token.')
-
-    return render(request, 'foodFinder/reset_password.html', {'token': token})
 
 def place_detail(request, place_id):
     place = get_object_or_404(Restaurant, id=place_id)
@@ -288,3 +240,22 @@ def place_detail(request, place_id):
         'restaurant': place,
         'reviews': reviews,
     })
+
+class PasswordUpdateView(View):
+    def get(self, request):
+        return render(request, 'password_reset.html')
+
+    def post(self, request):
+        new_password = request.POST.get('new_password')
+        confirm_password = request.POST.get('confirm_password')
+
+        if new_password == confirm_password:
+            # Assuming user is logged in or identified, update the password
+            user = request.user  # If the user is logged in
+            user.password = make_password(new_password)
+            user.save()
+            return redirect('login')  # Redirect back to login page
+        else:
+            # Passwords don't match, return with an error
+            return render(request, 'password_reset.html', {'error': "Passwords don't match!"})
+
